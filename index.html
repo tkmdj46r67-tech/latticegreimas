@@ -269,55 +269,69 @@
 // =========================================================
 
 const CONCEPTS = [
-  { id: 0, label: '⊥', short: 'Bottom',
-    name: 'Bottom — empty extent, all attributes',
-    extent: [],
-    intent: ['Is a planet','Is small','Is large','Has no moons','Has moons','Is far from sun'],
-    x: 0.50, y: 0.04 },
+  // Bottom (most specific)
+  { id: 0, label: 'Full freedom', short: 'FF',
+    name: 'Full freedom — non-interference, options, and effective agency',
+    extent: ['Free citizen'],
+    intent: ['Non-interference', 'Available options', 'Effective agency'],
+    x: 0.50, y: 0.06 },
 
-  { id: 1, label: 'Small · no moons', short: 'Sm·NM',
-    name: 'Small planets without moons',
-    extent: ['Mercury','Venus'],
-    intent: ['Is a planet','Is small','Has no moons'],
-    x: 0.14, y: 0.30 },
+  // Pair-attribute concepts
+  { id: 1, label: 'Formal liberty', short: 'FL',
+    name: 'Formal liberty — non-interference and options, but no effective agency',
+    extent: ['Free citizen', 'Poor but uncoerced'],
+    intent: ['Non-interference', 'Available options'],
+    x: 0.22, y: 0.36 },
 
-  { id: 2, label: 'Small · has moons', short: 'Sm·HM',
-    name: 'Small planets with moons',
-    extent: ['Earth','Mars'],
-    intent: ['Is a planet','Is small','Has moons'],
-    x: 0.50, y: 0.30 },
+  { id: 2, label: 'Inner freedom', short: 'IF',
+    name: 'Inner freedom — non-interference and effective agency, but no options',
+    extent: ['Free citizen', 'Stoic sage'],
+    intent: ['Non-interference', 'Effective agency'],
+    x: 0.50, y: 0.36 },
 
-  { id: 3, label: 'Large · moons · far', short: 'Lg·HM·FS',
-    name: 'Large planets with moons, far from sun',
-    extent: ['Jupiter','Saturn'],
-    intent: ['Is a planet','Is large','Has moons','Is far from sun'],
-    x: 0.86, y: 0.30 },
+  { id: 3, label: 'Capability', short: 'Cap',
+    name: 'Capability — options and effective agency, but no non-interference',
+    extent: ['Free citizen', 'Coerced but resourceful'],
+    intent: ['Available options', 'Effective agency'],
+    x: 0.78, y: 0.36 },
 
-  { id: 4, label: 'Small', short: 'Small',
-    name: 'All small planets',
-    extent: ['Mercury','Venus','Earth','Mars'],
-    intent: ['Is a planet','Is small'],
-    x: 0.28, y: 0.56 },
+  // Single-attribute concepts
+  { id: 4, label: 'Non-interference', short: 'NI',
+    name: 'Non-interference — negative liberty as such',
+    extent: ['Free citizen', 'Poor but uncoerced', 'Stoic sage', 'Mere non-interference'],
+    intent: ['Non-interference'],
+    x: 0.20, y: 0.66 },
 
-  { id: 5, label: 'Has moons', short: 'Moons',
-    name: 'All planets with moons',
-    extent: ['Earth','Mars','Jupiter','Saturn'],
-    intent: ['Is a planet','Has moons'],
-    x: 0.72, y: 0.56 },
+  { id: 5, label: 'Available options', short: 'AO',
+    name: 'Available options — the opportunity component',
+    extent: ['Free citizen', 'Poor but uncoerced', 'Coerced but resourceful'],
+    intent: ['Available options'],
+    x: 0.50, y: 0.66 },
 
-  { id: 6, label: '⊤', short: 'Top',
-    name: 'Top — all planets, shared attribute only',
-    extent: ['Mercury','Venus','Earth','Mars','Jupiter','Saturn'],
-    intent: ['Is a planet'],
-    x: 0.50, y: 0.82 }
+  { id: 6, label: 'Effective agency', short: 'EA',
+    name: 'Effective agency — the capability component',
+    extent: ['Free citizen', 'Stoic sage', 'Coerced but resourceful'],
+    intent: ['Effective agency'],
+    x: 0.80, y: 0.66 },
+
+  // Top (most general)
+  { id: 7, label: 'Freedom', short: 'Freedom',
+    name: 'Freedom as such — the most general concept',
+    extent: ['Free citizen', 'Poor but uncoerced', 'Stoic sage',
+             'Coerced but resourceful', 'Mere non-interference', 'Total unfreedom'],
+    intent: [],
+    x: 0.50, y: 0.94 }
 ];
 
 const EDGES = [
-  [0,1],[0,2],[0,3],
-  [1,4],
-  [2,4],[2,5],
-  [3,5],
-  [4,6],[5,6]
+  // From bottom up to pairs
+  [0, 1], [0, 2], [0, 3],
+  // From pairs up to singles
+  [1, 4], [1, 5],
+  [2, 4], [2, 6],
+  [3, 5], [3, 6],
+  // From singles up to top
+  [4, 7], [5, 7], [6, 7]
 ];
 
 // =========================================================
