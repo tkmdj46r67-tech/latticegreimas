@@ -117,6 +117,24 @@
     animation: pulseEdgeRed 1.9s ease-in-out infinite;
   }
 
+  /* Persistent pin ring — stays visible regardless of hover */
+  .node.pinned .pin-ring {
+    display: block;
+  }
+  .pin-ring {
+    display: none;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+    stroke-dasharray: 4 4;
+    opacity: 0.9;
+    pointer-events: none;
+    animation: rotateDash 8s linear infinite;
+  }
+  @keyframes rotateDash {
+    to { stroke-dashoffset: -80; }
+  }
+
   @keyframes pulseNodeOrange {
     0%, 100% { filter: drop-shadow(0 0 3px rgba(255,140,66,.4)); }
     50%      { filter: drop-shadow(0 0 16px rgba(255,140,66,1)); }
@@ -157,6 +175,28 @@
     color: var(--hover);
     margin-bottom: 14px;
     letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .pin-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #ffe9a8;
+    background: #4a3a1a;
+    border: 1px solid #8c6a2a;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+  .pin-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
   }
   .section-title {
     font-size: 11px;
@@ -201,12 +241,12 @@
 
 <header>
   <h1>Concept Lattice — Solar System</h1>
-  <p>Hover a node to explore its joins, meets, ancestors, and descendants.</p>
+  <p>Hover a node to preview its joins and meets. Click to pin the view. Click again to release.</p>
 </header>
 
 <div class="legend">
   <span><span class="dot" style="background:#5b9bd5"></span>Concept</span>
-  <span><span class="dot" style="background:#ffd23f"></span>Hovered</span>
+  <span><span class="dot" style="background:#ffd23f"></span>Hovered / pinned</span>
   <span><span class="dot" style="background:#ff8c42"></span>Above (join direction)</span>
   <span><span class="dot" style="background:#e63946"></span>Below (meet direction)</span>
 </div>
@@ -218,7 +258,7 @@
   <div id="panel">
     <div class="card" id="info-card">
       <h2>Node</h2>
-      <div class="hint">Hover a node in the lattice to see details.</div>
+      <div class="hint">Hover a node in the lattice to preview. Click to pin.</div>
     </div>
     <div class="card">
       <h2>Extent × Intent</h2>
@@ -333,12 +373,11 @@ const DESC = CONCEPTS.map((_, i) => descendantsOf(i));
 
 function join(a, b) {
   if (a === b) return a;
-  if (ANCS[a].has(b)) return b;          // b above a
-  if (ANCS[b].has(a)) return a;          // a above b
+  if (ANCS[a].has(b)) return b;
+  if (ANCS[b].has(a)) return a;
   const upA = new Set([a, ...ANCS[a]]);
   const upB = new Set([b, ...ANCS[b]]);
   const inter = [...upA].filter(x => upB.has(x));
-  // minimal element: no strict descendant in inter
   for (const x of inter) {
     let minimal = true;
     for (const y of inter) {
@@ -350,12 +389,11 @@ function join(a, b) {
 }
 function meet(a, b) {
   if (a === b) return a;
-  if (DESC[a].has(b)) return b;          // b below a
-  if (DESC[b].has(a)) return a;          // a below b
+  if (DESC[a].has(b)) return b;
+  if (DESC[b].has(a)) return a;
   const downA = new Set([a, ...DESC[a]]);
   const downB = new Set([b, ...DESC[b]]);
   const inter = [...downA].filter(x => downB.has(x));
-  // maximal element: no strict ancestor in inter
   for (const x of inter) {
     let maximal = true;
     for (const y of inter) {
@@ -381,7 +419,6 @@ const px = CONCEPTS.map(c => ({
   y: H - PAD_Y - c.y * (H - 2*PAD_Y)
 }));
 
-// Edges
 const edgeEls = [];
 EDGES.forEach(([a,b]) => {
   const line = document.createElementNS(svgNS, 'line');
@@ -396,12 +433,19 @@ EDGES.forEach(([a,b]) => {
   edgeEls.push(line);
 });
 
-// Nodes
 const nodeEls = [];
 CONCEPTS.forEach((c, i) => {
   const g = document.createElementNS(svgNS, 'g');
   g.setAttribute('class', 'node');
   g.dataset.id = i;
+
+  // Persistent pin ring (hidden by default)
+  const pinRing = document.createElementNS(svgNS, 'circle');
+  pinRing.setAttribute('cx', px[i].x);
+  pinRing.setAttribute('cy', px[i].y);
+  pinRing.setAttribute('r', NODE_R + 8);
+  pinRing.setAttribute('class', 'pin-ring');
+  g.appendChild(pinRing);
 
   const circle = document.createElementNS(svgNS, 'circle');
   circle.setAttribute('cx', px[i].x);
@@ -409,7 +453,6 @@ CONCEPTS.forEach((c, i) => {
   circle.setAttribute('r', NODE_R);
   g.appendChild(circle);
 
-  // Two-line label below node
   const lines = c.label.split(' · ');
   lines.forEach((ln, k) => {
     const t = document.createElementNS(svgNS, 'text');
@@ -423,19 +466,47 @@ CONCEPTS.forEach((c, i) => {
   svg.appendChild(g);
   nodeEls.push(g);
 
-  g.addEventListener('mouseenter', () => setHover(i));
-  g.addEventListener('mouseleave', () => clearHover());
+  g.addEventListener('mouseenter', () => onEnter(i));
+  g.addEventListener('mouseleave', () => onLeave(i));
+  g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(i); });
 });
 
 // =========================================================
-// 4. HOVER STATE
+// 4. STATE — hover preview + click pin
 // =========================================================
 
-let currentHover = null;
+let pinnedId = null;
+let hoverId  = null;
 
-function setHover(i) {
-  currentHover = i;
+function onEnter(i) {
+  hoverId = i;
+  applyState(i);
+}
+function onLeave(i) {
+  hoverId = null;
+  if (pinnedId !== null) {
+    applyState(pinnedId);      // revert to pinned view
+  } else {
+    clearAll();
+  }
+}
+function onToggle(i) {
+  if (pinnedId === i) {
+    // release the pin
+    pinnedId = null;
+    // fall back to hover if mouse is over something
+    if (hoverId !== null) applyState(hoverId);
+    else clearAll();
+  } else {
+    pinnedId = i;
+    applyState(i);
+  }
+  renderPanel();
+}
 
+// --- rendering ---
+
+function applyState(i) {
   nodeEls.forEach((el, k) => {
     el.classList.remove('hovered','ancestor','descendant');
     if (k === i) el.classList.add('hovered');
@@ -447,9 +518,7 @@ function setHover(i) {
     line.classList.remove('ancestor','descendant');
     const a = parseInt(line.dataset.a);
     const b = parseInt(line.dataset.b);
-    // Edge above i: bottom endpoint a is >= i
     const isAbove = (a === i) || ANCS[i].has(a);
-    // Edge below i: top endpoint b is <= i
     const isBelow = (b === i) || DESC[i].has(b);
     if (isAbove) line.classList.add('ancestor');
     else if (isBelow) line.classList.add('descendant');
@@ -459,13 +528,25 @@ function setHover(i) {
   updateScatter(i);
 }
 
-function clearHover() {
-  currentHover = null;
+function clearAll() {
   nodeEls.forEach(el => el.classList.remove('hovered','ancestor','descendant'));
   edgeEls.forEach(line => line.classList.remove('ancestor','descendant'));
   document.getElementById('info-card').innerHTML =
-    '<h2>Node</h2><div class="hint">Hover a node in the lattice to see details.</div>';
+    '<h2>Node</h2><div class="hint">Hover a node in the lattice to preview. Click to pin.</div>';
   updateScatter(null);
+}
+
+// --- pin markers ---
+
+function refreshPins() {
+  nodeEls.forEach((el, k) => {
+    el.classList.toggle('pinned', k === pinnedId);
+  });
+  scDotEls.forEach(dot => {
+    const id = parseInt(dot.dataset.id);
+    const ring = dot.parentNode.querySelector(`.sc-pin-ring[data-id="${id}"]`);
+    if (ring) ring.style.display = (id === pinnedId) ? 'block' : 'none';
+  });
 }
 
 // =========================================================
@@ -479,24 +560,31 @@ function chipNodes(ids, cls) {
   return ids.map(j => `<span class="chip ${cls}">${CONCEPTS[j].label}</span>`).join(' ');
 }
 
+function renderPanel() {
+  if (pinnedId !== null) {
+    updatePanel(pinnedId);
+  } else if (hoverId !== null) {
+    updatePanel(hoverId);
+  } else {
+    clearAll();
+  }
+}
+
 function updatePanel(i) {
   const c = CONCEPTS[i];
 
-  // Joins grouped by result
   const joinsByResult = {};
   for (let j = 0; j < N; j++) {
     if (j === i) continue;
     const r = join(i, j);
     (joinsByResult[r] ||= []).push(j);
   }
-  // Meets grouped by result
   const meetsByResult = {};
   for (let j = 0; j < N; j++) {
     if (j === i) continue;
     const r = meet(i, j);
     (meetsByResult[r] ||= []).push(j);
   }
-  // Pairs for which i is the join
   const asJoinOf = [];
   for (let x = 0; x < N; x++) {
     if (x === i) continue;
@@ -505,7 +593,6 @@ function updatePanel(i) {
       if (join(x, y) === i) asJoinOf.push([x, y]);
     }
   }
-  // Pairs for which i is the meet
   const asMeetOf = [];
   for (let x = 0; x < N; x++) {
     if (x === i) continue;
@@ -515,7 +602,12 @@ function updatePanel(i) {
     }
   }
 
-  let html = `<h2>Node</h2><div class="node-title">${c.name}</div>`;
+  const pinnedBadge = (pinnedId === i)
+    ? `<span class="pin-badge">📌 pinned</span>`
+    : `<span class="pin-hint">click to pin</span>`;
+
+  let html = `<h2>Node</h2>`;
+  html += `<div class="node-title">${c.name} ${pinnedBadge}</div>`;
 
   html += `<div class="section-title first">Extent (objects)</div>`;
   html += c.extent.length
@@ -589,29 +681,21 @@ const scDotEls = [];
 function buildScatter() {
   scatter.innerHTML = '';
 
-  // Grid lines
   for (let k = 0; k <= MAX_EXT; k++) {
     const l = document.createElementNS(svgNS, 'line');
-    l.setAttribute('x1', scX(k));
-    l.setAttribute('y1', scY(0));
-    l.setAttribute('x2', scX(k));
-    l.setAttribute('y2', scY(MAX_INT));
-    l.setAttribute('stroke', '#222a45');
-    l.setAttribute('stroke-width', 1);
+    l.setAttribute('x1', scX(k)); l.setAttribute('y1', scY(0));
+    l.setAttribute('x2', scX(k)); l.setAttribute('y2', scY(MAX_INT));
+    l.setAttribute('stroke', '#222a45'); l.setAttribute('stroke-width', 1);
     scatter.appendChild(l);
   }
   for (let k = 0; k <= MAX_INT; k++) {
     const l = document.createElementNS(svgNS, 'line');
-    l.setAttribute('x1', scX(0));
-    l.setAttribute('y1', scY(k));
-    l.setAttribute('x2', scX(MAX_EXT));
-    l.setAttribute('y2', scY(k));
-    l.setAttribute('stroke', '#222a45');
-    l.setAttribute('stroke-width', 1);
+    l.setAttribute('x1', scX(0)); l.setAttribute('y1', scY(k));
+    l.setAttribute('x2', scX(MAX_EXT)); l.setAttribute('y2', scY(k));
+    l.setAttribute('stroke', '#222a45'); l.setAttribute('stroke-width', 1);
     scatter.appendChild(l);
   }
 
-  // Axes
   const ax = document.createElementNS(svgNS, 'line');
   ax.setAttribute('x1', scX(0)); ax.setAttribute('y1', scY(0));
   ax.setAttribute('x2', scX(MAX_EXT)); ax.setAttribute('y2', scY(0));
@@ -624,7 +708,6 @@ function buildScatter() {
   ay.setAttribute('stroke', '#3a3f55'); ay.setAttribute('stroke-width', 1.5);
   scatter.appendChild(ay);
 
-  // Ticks
   for (let k = 0; k <= MAX_EXT; k++) {
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('x', scX(k));
@@ -646,7 +729,6 @@ function buildScatter() {
     scatter.appendChild(t);
   }
 
-  // Axis labels
   const xl = document.createElementNS(svgNS, 'text');
   xl.setAttribute('x', SC_W / 2);
   xl.setAttribute('y', SC_H - 8);
@@ -668,8 +750,22 @@ function buildScatter() {
   yl.textContent = '|intent| (number of attributes)';
   scatter.appendChild(yl);
 
-  // Dots
   CONCEPTS.forEach((c, i) => {
+    // pin ring for scatter dot
+    const ring = document.createElementNS(svgNS, 'circle');
+    ring.setAttribute('cx', scX(c.extent.length));
+    ring.setAttribute('cy', scY(c.intent.length));
+    ring.setAttribute('r', 12);
+    ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', '#fff');
+    ring.setAttribute('stroke-width', 1.5);
+    ring.setAttribute('stroke-dasharray', '3 3');
+    ring.setAttribute('class', 'sc-pin-ring');
+    ring.dataset.id = i;
+    ring.style.display = 'none';
+    ring.style.pointerEvents = 'none';
+    scatter.appendChild(ring);
+
     const dot = document.createElementNS(svgNS, 'circle');
     dot.setAttribute('cx', scX(c.extent.length));
     dot.setAttribute('cy', scY(c.intent.length));
@@ -683,7 +779,6 @@ function buildScatter() {
     scatter.appendChild(dot);
     scDotEls.push(dot);
 
-    // Short label above the dot
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('x', scX(c.extent.length));
     t.setAttribute('y', scY(c.intent.length) - 14);
@@ -695,9 +790,9 @@ function buildScatter() {
     t.textContent = c.short;
     scatter.appendChild(t);
 
-    // Hover on the dot too
-    dot.addEventListener('mouseenter', () => setHover(i));
-    dot.addEventListener('mouseleave', () => clearHover());
+    dot.addEventListener('mouseenter', () => onEnter(i));
+    dot.addEventListener('mouseleave', () => onLeave(i));
+    dot.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(i); });
   });
 }
 
@@ -728,7 +823,18 @@ function updateScatter(i) {
       dot.style.filter = 'none';
     }
   });
+  refreshPins();
 }
+
+// Click on empty space releases the pin
+document.addEventListener('click', () => {
+  if (pinnedId !== null) {
+    pinnedId = null;
+    if (hoverId !== null) applyState(hoverId);
+    else clearAll();
+    renderPanel();
+  }
+});
 </script>
 </body>
 </html>
