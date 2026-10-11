@@ -105,4 +105,1333 @@
     text-anchor: middle; pointer-events: none; user-select: none;
   }
   .edge {
-    stroke
+    stroke: var(--edge); stroke-width: 1.4;
+    transition: stroke .25s, stroke-width .25s, stroke-opacity .25s;
+  }
+  .node.hovered circle {
+    fill: var(--hover); stroke: #fff3c4; stroke-width: 3;
+    filter: drop-shadow(0 0 14px rgba(255,210,63,.85));
+  }
+  .node.ancestor circle {
+    fill: var(--anc); stroke: #ffcfae; stroke-width: 2;
+    animation: pulseNodeOrange 1.9s ease-in-out infinite;
+  }
+  .node.descendant circle {
+    fill: var(--desc); stroke: #ffb0b8; stroke-width: 2;
+    animation: pulseNodeRed 1.9s ease-in-out infinite;
+  }
+  .edge.ancestor { stroke: var(--anc); stroke-width: 3;
+    animation: pulseEdgeOrange 1.9s ease-in-out infinite; }
+  .edge.descendant { stroke: var(--desc); stroke-width: 3;
+    animation: pulseEdgeRed 1.9s ease-in-out infinite; }
+
+  .node.pinned .pin-ring { display: block; }
+  .pin-ring {
+    display: none; fill: none; stroke: #fff; stroke-width: 2;
+    stroke-dasharray: 4 4; opacity: 0.9; pointer-events: none;
+    animation: rotateDash 8s linear infinite;
+  }
+  @keyframes rotateDash { to { stroke-dashoffset: -80; } }
+  @keyframes pulseNodeOrange {
+    0%, 100% { filter: drop-shadow(0 0 3px rgba(255,140,66,.4)); }
+    50%      { filter: drop-shadow(0 0 16px rgba(255,140,66,1)); }
+  }
+  @keyframes pulseNodeRed {
+    0%, 100% { filter: drop-shadow(0 0 3px rgba(230,57,70,.4)); }
+    50%      { filter: drop-shadow(0 0 16px rgba(230,57,70,1)); }
+  }
+  @keyframes pulseEdgeOrange {
+    0%, 100% { stroke-opacity: .55; } 50% { stroke-opacity: 1; }
+  }
+  @keyframes pulseEdgeRed {
+    0%, 100% { stroke-opacity: .55; } 50% { stroke-opacity: 1; }
+  }
+
+  .greimas-x {
+    display: none; pointer-events: none;
+    stroke: #1a1a1a; stroke-width: 2.6; stroke-linecap: round;
+  }
+  .node.hovered.no-greimas .greimas-x { display: block; }
+
+  .greimas-node { cursor: default; }
+  .greimas-node .greimas-pin-ring {
+    fill: none; stroke: #fff; stroke-width: 2;
+    stroke-dasharray: 4 4; opacity: 0;
+    pointer-events: none; transition: opacity .25s;
+  }
+  .greimas-node.highlighted .greimas-pin-ring {
+    opacity: 0.95; animation: rotateDash 8s linear infinite;
+  }
+  .greimas-node.highlighted circle:not(.greimas-pin-ring) {
+    stroke: #fff; stroke-width: 3;
+    filter: drop-shadow(0 0 16px rgba(255,210,63,1));
+  }
+
+  .card {
+    background: var(--panel); border-radius: 14px; padding: 18px 20px 20px;
+    margin-bottom: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+    max-height: 72vh; overflow-y: auto;
+  }
+  .card h2 {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--text-dim); margin: 0 0 10px;
+  }
+  .node-title {
+    font-size: 17px; font-weight: 700; color: var(--hover);
+    margin-bottom: 14px; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .pin-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: #ffe9a8; background: #4a3a1a;
+    border: 1px solid #8c6a2a; padding: 2px 8px; border-radius: 10px;
+  }
+  .pin-hint {
+    font-size: 11px; color: var(--text-dim); font-weight: 400;
+    letter-spacing: 0; text-transform: none;
+  }
+  .section-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--text-dim); margin: 16px 0 6px;
+    border-top: 1px solid #2a2f45; padding-top: 12px;
+  }
+  .section-title.first { border-top: none; padding-top: 0; margin-top: 0; }
+  .kv { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
+  .kv .k { color: var(--text-dim); }
+  .bullet {
+    padding-left: 14px; position: relative; font-size: 12.5px;
+    line-height: 1.5; margin-bottom: 6px; color: #d4d8e8;
+  }
+  .bullet::before {
+    content: '•'; position: absolute; left: 2px; color: var(--text-dim);
+  }
+  .relation-key { color: var(--anc); font-weight: 600; }
+  .relation-key.contr { color: #ff8c42; }
+  .relation-key.contra { color: #e63946; }
+  .relation-key.impl { color: #5b9bd5; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  .chip {
+    display: inline-block; padding: 2px 9px; border-radius: 10px;
+    font-size: 11.5px; background: var(--panel-2); color: var(--text);
+    border: 1px solid #3a3f55; white-space: nowrap;
+  }
+  .chip.obj { background: #23324d; border-color: #4a6a9a; color: #cce0ff; }
+  .chip.attr { background: #33254d; border-color: #6a4a9a; color: #e0ccff; }
+  .chip.anc { background: #4a2a1a; border-color: #8c4a2a; color: #ffd1b3; }
+  .chip.desc { background: #4a1a2a; border-color: #8c2a3a; color: #ffb8c4; }
+  .chip.self { background: #4a3a1a; border-color: #8c6a2a; color: #fff0b3; font-weight: 600; }
+  .hint { color: var(--text-dim); font-size: 13px; font-style: italic; }
+
+  #scatter {
+    background: var(--panel); border-radius: 14px; width: 100%;
+    display: block; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  }
+  .scatter-hint { color: var(--text-dim); font-size: 11.5px; margin-top: 8px; text-align: center; }
+  .arrow-anc { color: var(--anc); font-weight: 700; }
+  .arrow-desc { color: var(--desc); font-weight: 700; }
+  .greimas-hint {
+    color: var(--text-dim); font-size: 11.5px; margin-top: 10px;
+    text-align: center; line-height: 1.45;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="page-title">Concept Lattice Viewer</h1>
+  <p id="page-subtitle">Hover a node to preview its joins and meets. Click to pin. Click again to release.</p>
+</header>
+
+<details class="json-card" id="json-card">
+  <summary>Load custom JSON</summary>
+  <div class="json-body">
+    <textarea id="json-input" placeholder="Paste the JSON output from the Python script here."></textarea>
+    <div class="json-actions">
+      <button class="json-btn" id="json-update-btn">Update</button>
+      <span class="json-status" id="json-status"></span>
+    </div>
+  </div>
+</details>
+
+<div class="tabbar" id="tabbar"></div>
+
+<div class="legend">
+  <span><span class="dot" style="background:#5b9bd5"></span>Concept</span>
+  <span><span class="dot" style="background:#ffd23f"></span>Hovered / pinned</span>
+  <span><span class="dot" style="background:#ff8c42"></span>Above (join direction)</span>
+  <span><span class="dot" style="background:#e63946"></span>Below (meet direction)</span>
+</div>
+
+<div class="container">
+  <div id="lattice-wrap">
+    <svg id="lattice"></svg>
+    <div class="card" id="greimas-card" style="display:none; margin-top:16px;">
+      <h2>Greimas Square</h2>
+      <svg id="greimas"></svg>
+      <div class="greimas-hint" id="greimas-hint">
+        Click a lattice node to highlight its counterpart.
+      </div>
+    </div>
+  </div>
+  <div id="panel">
+    <div class="card" id="info-card">
+      <h2>Node</h2>
+      <div class="hint">Hover a node in the lattice to preview. Click to pin.</div>
+    </div>
+    <div class="card">
+      <h2>Extent × Intent</h2>
+      <svg id="scatter"></svg>
+      <div class="scatter-hint">Dot size reflects how many concepts share the same position.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// DATASETS
+// =========================================================
+
+const DATASETS = {
+
+  planets: {
+    title: 'Concept Lattice — Solar System',
+    subtitle: 'Hover a node to preview its joins and meets. Click to pin. Click again to release.',
+    viewBox: { w: 800, h: 660 },
+    padX: 100, padY: 90, nodeR: 26, labelLines: false,
+    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42, maxExt: 6, maxInt: 6 },
+    concepts: [
+      { id: 0, label: '⊥', short: 'Bottom', name: 'Bottom — empty extent, all attributes',
+        extent: [], intent: ['Is a planet','Is small','Is large','Has no moons','Has moons','Is far from sun'],
+        x: 0.50, y: 0.04 },
+      { id: 1, label: 'Small · no moons', short: 'Sm·NM', name: 'Small planets without moons',
+        extent: ['Mercury','Venus'], intent: ['Is a planet','Is small','Has no moons'],
+        x: 0.14, y: 0.30 },
+      { id: 2, label: 'Small · has moons', short: 'Sm·HM', name: 'Small planets with moons',
+        extent: ['Earth','Mars'], intent: ['Is a planet','Is small','Has moons'],
+        x: 0.50, y: 0.30 },
+      { id: 3, label: 'Large · moons · far', short: 'Lg·HM·FS', name: 'Large planets with moons, far from sun',
+        extent: ['Jupiter','Saturn'], intent: ['Is a planet','Is large','Has moons','Is far from sun'],
+        x: 0.86, y: 0.30 },
+      { id: 4, label: 'Small', short: 'Small', name: 'All small planets',
+        extent: ['Mercury','Venus','Earth','Mars'], intent: ['Is a planet','Is small'],
+        x: 0.28, y: 0.56 },
+      { id: 5, label: 'Has moons', short: 'Moons', name: 'All planets with moons',
+        extent: ['Earth','Mars','Jupiter','Saturn'], intent: ['Is a planet','Has moons'],
+        x: 0.72, y: 0.56 },
+      { id: 6, label: '⊤', short: 'Top', name: 'Top — all planets, shared attribute only',
+        extent: ['Mercury','Venus','Earth','Mars','Jupiter','Saturn'], intent: ['Is a planet'],
+        x: 0.50, y: 0.82 }
+    ],
+    edges: [[0,1],[0,2],[0,3],[1,4],[2,4],[2,5],[3,5],[4,6],[5,6]]
+  },
+
+  freedom2: {
+    title: 'Concept Lattice — Freedom (Two Axes)',
+    subtitle: 'Two binary oppositions: non-interference and available options.',
+    viewBox: { w: 800, h: 600 },
+    padX: 100, padY: 100, nodeR: 26, labelLines: false,
+    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42, maxExt: 4, maxInt: 2 },
+    concepts: [
+      { id: 0, label: '⊥', short: 'Bottom', name: 'Bottom — no scenario, both attributes',
+        extent: [], intent: ['Non-interference','Available options'], x: 0.50, y: 0.06 },
+      { id: 1, label: 'Non-interference', short: 'NI',
+        name: 'Non-interference — left alone, but no alternatives',
+        extent: ['No alternatives','Free citizen'], intent: ['Non-interference'], x: 0.20, y: 0.50 },
+      { id: 2, label: 'Available options', short: 'AO',
+        name: 'Available options — under coercion, but with choices',
+        extent: ['Coerced chooser','Free citizen'], intent: ['Available options'], x: 0.80, y: 0.50 },
+      { id: 3, label: '⊤', short: 'Top', name: 'Top — all scenarios, no shared attribute',
+        extent: ['No alternatives','Coerced chooser','Free citizen','Trapped'], intent: [], x: 0.50, y: 0.94 }
+    ],
+    edges: [[0, 1], [0, 2], [1, 3], [2, 3]]
+  }
+
+};
+
+// =========================================================
+// STATE
+// =========================================================
+
+const state = {
+  currentKey: 'planets',
+  pinnedByDataset: { planets: null, freedom2: null },
+  hoverId: null,
+  D: null,
+  nodeEls: [], edgeEls: [], scDotEls: [], scLegendRows: [],
+  greimasNodeEls: [], greimasNodeElsByKey: {}
+};
+
+const svgNS = 'http://www.w3.org/2000/svg';
+
+// =========================================================
+// PROCESSING
+// =========================================================
+
+function processDataset(raw) {
+  const N = raw.concepts.length;
+  const parents = Array.from({length:N}, () => []);
+  const children = Array.from({length:N}, () => []);
+  raw.edges.forEach(([a,b]) => { parents[a].push(b); children[b].push(a); });
+
+  function ancestorsOf(i) {
+    const seen = new Set(); const stack = [...parents[i]];
+    while (stack.length) {
+      const j = stack.pop();
+      if (seen.has(j)) continue;
+      seen.add(j); stack.push(...parents[j]);
+    }
+    return seen;
+  }
+  function descendantsOf(i) {
+    const seen = new Set(); const stack = [...children[i]];
+    while (stack.length) {
+      const j = stack.pop();
+      if (seen.has(j)) continue;
+      seen.add(j); stack.push(...children[j]);
+    }
+    return seen;
+  }
+
+  const ANCS = raw.concepts.map((_, i) => ancestorsOf(i));
+  const DESC = raw.concepts.map((_, i) => descendantsOf(i));
+
+  function join(a, b) {
+    if (a === b) return a;
+    if (ANCS[a].has(b)) return b;
+    if (ANCS[b].has(a)) return a;
+    const upA = new Set([a, ...ANCS[a]]);
+    const upB = new Set([b, ...ANCS[b]]);
+    const inter = [...upA].filter(x => upB.has(x));
+    for (const x of inter) {
+      let minimal = true;
+      for (const y of inter) {
+        if (y !== x && DESC[x].has(y)) { minimal = false; break; }
+      }
+      if (minimal) return x;
+    }
+    return inter[0];
+  }
+  function meet(a, b) {
+    if (a === b) return a;
+    if (DESC[a].has(b)) return b;
+    if (DESC[b].has(a)) return a;
+    const downA = new Set([a, ...DESC[a]]);
+    const downB = new Set([b, ...DESC[b]]);
+    const inter = [...downA].filter(x => downB.has(x));
+    for (const x of inter) {
+      let maximal = true;
+      for (const y of inter) {
+        if (y !== x && ANCS[x].has(y)) { maximal = false; break; }
+      }
+      if (maximal) return x;
+    }
+    return inter[0];
+  }
+
+  return Object.assign({}, raw, { N, parents, children, ANCS, DESC, join, meet });
+}
+
+// =========================================================
+// LATTICE BUILD
+// =========================================================
+
+function buildLattice() {
+  const D = state.D;
+  const svg = document.getElementById('lattice');
+  svg.innerHTML = '';
+  svg.setAttribute('viewBox', `0 0 ${D.viewBox.w} ${D.viewBox.h}`);
+
+  const W = D.viewBox.w, H = D.viewBox.h;
+  const PAD_X = D.padX, PAD_Y = D.padY;
+  const NODE_R = D.nodeR;
+
+  const px = D.concepts.map(c => ({
+    x: PAD_X + c.x * (W - 2*PAD_X),
+    y: H - PAD_Y - c.y * (H - 2*PAD_Y)
+  }));
+
+  state.nodeEls = [];
+  state.edgeEls = [];
+
+  D.edges.forEach(([a,b]) => {
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', px[a].x); line.setAttribute('y1', px[a].y);
+    line.setAttribute('x2', px[b].x); line.setAttribute('y2', px[b].y);
+    line.setAttribute('class', 'edge');
+    line.dataset.a = a; line.dataset.b = b;
+    svg.appendChild(line); state.edgeEls.push(line);
+  });
+
+  D.concepts.forEach((c, i) => {
+    const g = document.createElementNS(svgNS, 'g');
+    g.setAttribute('class', 'node');
+    g.dataset.id = i;
+
+    const hasGreimas = !!D.greimas;
+    const hasMapping = hasGreimas && D.greimas.mapping[i] !== undefined;
+    if (hasGreimas && !hasMapping) g.classList.add('no-greimas');
+
+    const pinRing = document.createElementNS(svgNS, 'circle');
+    pinRing.setAttribute('cx', px[i].x);
+    pinRing.setAttribute('cy', px[i].y);
+    pinRing.setAttribute('r', NODE_R + 8);
+    pinRing.setAttribute('class', 'pin-ring');
+    g.appendChild(pinRing);
+
+    const circle = document.createElementNS(svgNS, 'circle');
+    circle.setAttribute('cx', px[i].x);
+    circle.setAttribute('cy', px[i].y);
+    circle.setAttribute('r', NODE_R);
+    g.appendChild(circle);
+
+    if (hasGreimas && !hasMapping) {
+      const xs = NODE_R * 0.46;
+      const x1 = document.createElementNS(svgNS, 'line');
+      x1.setAttribute('x1', px[i].x - xs); x1.setAttribute('y1', px[i].y - xs);
+      x1.setAttribute('x2', px[i].x + xs); x1.setAttribute('y2', px[i].y + xs);
+      x1.setAttribute('class', 'greimas-x');
+      g.appendChild(x1);
+      const x2 = document.createElementNS(svgNS, 'line');
+      x2.setAttribute('x1', px[i].x + xs); x2.setAttribute('y1', px[i].y - xs);
+      x2.setAttribute('x2', px[i].x - xs); x2.setAttribute('y2', px[i].y + xs);
+      x2.setAttribute('class', 'greimas-x');
+      g.appendChild(x2);
+    }
+
+    const lines = D.labelLines ? c.label.split(' · ') : [c.label];
+    lines.forEach((ln, k) => {
+      const t = document.createElementNS(svgNS, 'text');
+      t.setAttribute('x', px[i].x);
+      t.setAttribute('y', px[i].y + NODE_R + (D.labelLines ? 14 : 18) + k * 12);
+      t.setAttribute('text-anchor', 'middle');
+      t.textContent = ln;
+      g.appendChild(t);
+    });
+
+    svg.appendChild(g);
+    state.nodeEls.push(g);
+
+    g.addEventListener('mouseenter', () => onEnter(i));
+    g.addEventListener('mouseleave', () => onLeave(i));
+    g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(i); });
+  });
+}
+
+// =========================================================
+// GREIMAS BUILD
+// =========================================================
+
+function buildGreimas() {
+  const D = state.D;
+  const card = document.getElementById('greimas-card');
+  const svg = document.getElementById('greimas');
+  const hint = document.getElementById('greimas-hint');
+  svg.innerHTML = '';
+  state.greimasNodeEls = [];
+  state.greimasNodeElsByKey = {};
+
+  if (!D.greimas) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const G = D.greimas;
+  svg.setAttribute('viewBox', `0 0 ${G.viewBox.w} ${G.viewBox.h}`);
+
+  G.edges.forEach(([a, b, kind]) => {
+    const na = G.nodes[a], nb = G.nodes[b];
+    if (!na || !nb) return;
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', na.x); line.setAttribute('y1', na.y);
+    line.setAttribute('x2', nb.x); line.setAttribute('y2', nb.y);
+    if (kind === 'inner') {
+      line.setAttribute('stroke', '#c9a227');
+      line.setAttribute('stroke-width', '1.8');
+      line.setAttribute('stroke-dasharray', '5 3');
+      line.setAttribute('stroke-opacity', '0.85');
+    } else if (kind === 'inner-m1') {
+      line.setAttribute('stroke', '#5b9bd5');
+      line.setAttribute('stroke-width', '1.1');
+      line.setAttribute('stroke-dasharray', '2 3');
+      line.setAttribute('stroke-opacity', '0.65');
+    } else {
+      line.setAttribute('stroke', '#3fa34d');
+      line.setAttribute('stroke-width', '1.1');
+      line.setAttribute('stroke-opacity', '0.55');
+    }
+    svg.appendChild(line);
+  });
+
+  Object.entries(G.nodes).forEach(([key, node]) => {
+    const g = document.createElementNS(svgNS, 'g');
+    g.setAttribute('class', 'greimas-node');
+    g.setAttribute('data-key', key);
+
+    let radius = 16, fill = '#ffd23f';
+    if (node.tier === 'm1') { fill = '#5b9bd5'; radius = 14; }
+    else if (node.tier === 'm2') { fill = '#3fa34d'; radius = 12; }
+
+    const pinRing = document.createElementNS(svgNS, 'circle');
+    pinRing.setAttribute('cx', node.x);
+    pinRing.setAttribute('cy', node.y);
+    pinRing.setAttribute('r', radius + 8);
+    pinRing.setAttribute('class', 'greimas-pin-ring');
+    g.appendChild(pinRing);
+
+    const circle = document.createElementNS(svgNS, 'circle');
+    circle.setAttribute('cx', node.x);
+    circle.setAttribute('cy', node.y);
+    circle.setAttribute('r', radius);
+    circle.setAttribute('fill', fill);
+    circle.setAttribute('stroke', '#1a1a1a');
+    circle.setAttribute('stroke-width', '1.5');
+    g.appendChild(circle);
+
+    const t = document.createElementNS(svgNS, 'text');
+    t.setAttribute('fill', '#c8cde0');
+    t.style.fontSize = '11px';
+    t.style.fontWeight = '600';
+    t.style.userSelect = 'none';
+    t.style.pointerEvents = 'none';
+    t.textContent = node.label;
+    const gap = 6;
+    if (node.labelPos === 'below') {
+      t.setAttribute('x', node.x);
+      t.setAttribute('y', node.y + radius + 14);
+      t.setAttribute('text-anchor', 'middle');
+    } else if (node.labelPos === 'above') {
+      t.setAttribute('x', node.x);
+      t.setAttribute('y', node.y - radius - gap);
+      t.setAttribute('text-anchor', 'middle');
+    } else if (node.labelPos === 'left') {
+      t.setAttribute('x', node.x - radius - gap);
+      t.setAttribute('y', node.y + 4);
+      t.setAttribute('text-anchor', 'end');
+    } else {
+      t.setAttribute('x', node.x + radius + gap);
+      t.setAttribute('y', node.y + 4);
+      t.setAttribute('text-anchor', 'start');
+    }
+    g.appendChild(t);
+
+    svg.appendChild(g);
+    state.greimasNodeEls.push(g);
+    state.greimasNodeElsByKey[key] = g;
+  });
+
+  hint.textContent = 'Click a lattice node to highlight its counterpart. Nodes marked with an X in the lattice have no counterpart here.';
+  updateGreimas();
+}
+
+function updateGreimas() {
+  if (!state.D.greimas) return;
+  const p = getPinned();
+  const key = (p !== null) ? state.D.greimas.mapping[p] : null;
+  state.greimasNodeEls.forEach(el => el.classList.remove('highlighted'));
+  if (key && state.greimasNodeElsByKey[key]) {
+    state.greimasNodeElsByKey[key].classList.add('highlighted');
+  }
+}
+
+// =========================================================
+// SCATTER BUILD
+// =========================================================
+
+function buildScatter() {
+  const D = state.D;
+  const scatter = document.getElementById('scatter');
+  scatter.innerHTML = '';
+  scatter.setAttribute('viewBox', `0 0 ${D.scatter.w} ${D.scatter.h}`);
+
+  state.scDotEls = [];
+  state.scLegendRows = [];
+
+  const SC_W = D.scatter.w, SC_H = D.scatter.h;
+  const SC_PAD_L = D.scatter.padL, SC_PAD_R = D.scatter.padR;
+  const SC_PAD_T = D.scatter.padT, SC_PAD_B = D.scatter.padB;
+  const SC_INNER_W = SC_W - SC_PAD_L - SC_PAD_R;
+  const SC_INNER_H = SC_H - SC_PAD_T - SC_PAD_B;
+  const MAX_EXT = D.scatter.maxExt, MAX_INT = D.scatter.maxInt;
+  const LEGEND_X = SC_PAD_L + SC_INNER_W + 12;
+  const LEGEND_ROW_H = 18;
+
+  const scX = v => SC_PAD_L + (v / MAX_EXT) * SC_INNER_W;
+  const scY = v => SC_H - SC_PAD_B - (v / MAX_INT) * SC_INNER_H;
+
+  for (let k = 0; k <= MAX_INT; k++) {
+    const l = document.createElementNS(svgNS, 'line');
+    l.setAttribute('x1', scX(0)); l.setAttribute('y1', scY(k));
+    l.setAttribute('x2', scX(MAX_EXT)); l.setAttribute('y2', scY(k));
+    l.setAttribute('stroke', '#222a45'); l.setAttribute('stroke-width', 1);
+    scatter.appendChild(l);
+  }
+  const ax = document.createElementNS(svgNS, 'line');
+  ax.setAttribute('x1', scX(0)); ax.setAttribute('y1', scY(0));
+  ax.setAttribute('x2', scX(MAX_EXT)); ax.setAttribute('y2', scY(0));
+  ax.setAttribute('stroke', '#3a3f55'); ax.setAttribute('stroke-width', 1.5);
+  scatter.appendChild(ax);
+  const ay = document.createElementNS(svgNS, 'line');
+  ay.setAttribute('x1', scX(0)); ay.setAttribute('y1', scY(0));
+  ay.setAttribute('x2', scX(0)); ay.setAttribute('y2', scY(MAX_INT));
+  ay.setAttribute('stroke', '#3a3f55'); ay.setAttribute('stroke-width', 1.5);
+  scatter.appendChild(ay);
+
+  const xticks = MAX_EXT > 8 ? [0, 5, 10, 15] : Array.from({length: MAX_EXT+1}, (_,k)=>k);
+  xticks.forEach(k => {
+    if (k > MAX_EXT) return;
+    const t = document.createElementNS(svgNS, 'text');
+    t.setAttribute('x', scX(k)); t.setAttribute('y', SC_H - SC_PAD_B + 16);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('fill', '#5a6080');
+    t.style.fontSize = '10px'; t.textContent = k;
+    scatter.appendChild(t);
+  });
+  for (let k = 0; k <= MAX_INT; k++) {
+    const t = document.createElementNS(svgNS, 'text');
+    t.setAttribute('x', SC_PAD_L - 8); t.setAttribute('y', scY(k) + 4);
+    t.setAttribute('text-anchor', 'end');
+    t.setAttribute('fill', '#5a6080');
+    t.style.fontSize = '10px'; t.textContent = k;
+    scatter.appendChild(t);
+  }
+
+  const plotCenterX = SC_PAD_L + SC_INNER_W / 2;
+  const plotCenterY = SC_PAD_T + SC_INNER_H / 2;
+
+  const xl = document.createElementNS(svgNS, 'text');
+  xl.setAttribute('x', plotCenterX);
+  xl.setAttribute('y', SC_H - 8);
+  xl.setAttribute('text-anchor', 'middle');
+  xl.setAttribute('fill', '#8a90a8');
+  xl.style.fontSize = '11px'; xl.style.fontWeight = '600';
+  xl.textContent = '|extent|';
+  scatter.appendChild(xl);
+
+  const yl = document.createElementNS(svgNS, 'text');
+  yl.setAttribute('x', 12);
+  yl.setAttribute('y', plotCenterY);
+  yl.setAttribute('text-anchor', 'middle');
+  yl.setAttribute('fill', '#8a90a8');
+  yl.style.fontSize = '11px'; yl.style.fontWeight = '600';
+  yl.setAttribute('transform', `rotate(-90, 12, ${plotCenterY})`);
+  yl.textContent = '|intent|';
+  scatter.appendChild(yl);
+
+  const lt = document.createElementNS(svgNS, 'text');
+  lt.setAttribute('x', LEGEND_X);
+  lt.setAttribute('y', SC_PAD_T + 2);
+  lt.setAttribute('fill', '#8a90a8');
+  lt.style.fontSize = '9px'; lt.style.fontWeight = '700';
+  lt.style.letterSpacing = '0.08em';
+  lt.textContent = 'CONCEPTS';
+  scatter.appendChild(lt);
+
+  const groups = new Map();
+  D.concepts.forEach((c, i) => {
+    const key = `${c.extent.length}|${c.intent.length}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(i);
+  });
+
+  groups.forEach((ids, key) => {
+    const [ex, it] = key.split('|').map(Number);
+    const cx = scX(ex), cy = scY(it);
+    const count = ids.length;
+    const baseR = 8 * Math.sqrt(count);
+
+    const g = document.createElementNS(svgNS, 'g');
+
+    const ring = document.createElementNS(svgNS, 'circle');
+    ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
+    ring.setAttribute('r', baseR + 5);
+    ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', '#fff');
+    ring.setAttribute('stroke-width', 1.5);
+    ring.setAttribute('stroke-dasharray', '3 3');
+    ring.style.display = 'none';
+    ring.style.pointerEvents = 'none';
+    g.appendChild(ring);
+
+    const dot = document.createElementNS(svgNS, 'circle');
+    dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+    dot.setAttribute('r', baseR);
+    dot.setAttribute('fill', '#5b9bd5');
+    dot.setAttribute('stroke', '#0f1220');
+    dot.setAttribute('stroke-width', '2');
+    dot.style.transition = 'r .25s, fill .25s, filter .25s';
+    g.appendChild(dot);
+
+    if (count > 1) {
+      const num = document.createElementNS(svgNS, 'text');
+      num.setAttribute('x', cx);
+      num.setAttribute('y', cy + 4);
+      num.setAttribute('text-anchor', 'middle');
+      num.setAttribute('fill', '#0f1220');
+      num.style.fontSize = '11px';
+      num.style.fontWeight = '700';
+      num.style.pointerEvents = 'none';
+      num.textContent = count;
+      g.appendChild(num);
+    }
+
+    scatter.appendChild(g);
+    state.scDotEls.push({ g, dot, ring, ids, key, baseR, count });
+
+    if (count === 1) {
+      const only = ids[0];
+      g.style.cursor = 'pointer';
+      g.addEventListener('mouseenter', () => onEnter(only));
+      g.addEventListener('mouseleave', () => onLeave(only));
+      g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(only); });
+    }
+  });
+
+  let ly = SC_PAD_T + 16;
+  let lastKey = null;
+  groups.forEach((ids, key) => {
+    if (lastKey !== null) ly += 4;
+    const [ex, it] = key.split('|').map(Number);
+
+    ids.forEach((conceptId) => {
+      const c = D.concepts[conceptId];
+      const rowY = ly + 8;
+
+      const row = document.createElementNS(svgNS, 'g');
+      row.style.cursor = 'pointer';
+
+      const marker = document.createElementNS(svgNS, 'circle');
+      marker.setAttribute('cx', LEGEND_X + 5);
+      marker.setAttribute('cy', rowY);
+      marker.setAttribute('r', 4);
+      marker.setAttribute('fill', '#5b9bd5');
+      marker.setAttribute('stroke', '#0f1220');
+      marker.setAttribute('stroke-width', '1');
+      row.appendChild(marker);
+
+      const label = document.createElementNS(svgNS, 'text');
+      label.setAttribute('x', LEGEND_X + 15);
+      label.setAttribute('y', rowY + 3.5);
+      label.setAttribute('fill', '#c8cde0');
+      label.style.fontSize = '10px';
+      label.style.fontWeight = '600';
+      label.textContent = c.short;
+      row.appendChild(label);
+
+      const posText = document.createElementNS(svgNS, 'text');
+      posText.setAttribute('x', SC_W - 6);
+      posText.setAttribute('y', rowY + 3.5);
+      posText.setAttribute('text-anchor', 'end');
+      posText.setAttribute('fill', '#5a6080');
+      posText.style.fontSize = '8.5px';
+      posText.textContent = `(${ex},${it})`;
+      row.appendChild(posText);
+
+      scatter.appendChild(row);
+      state.scLegendRows.push({ row, marker, label, conceptId });
+
+      row.addEventListener('mouseenter', () => onEnter(conceptId));
+      row.addEventListener('mouseleave', () => onLeave(conceptId));
+      row.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(conceptId); });
+
+      ly += LEGEND_ROW_H;
+    });
+
+    lastKey = key;
+  });
+}
+
+// =========================================================
+// STATE & INTERACTION
+// =========================================================
+
+function getPinned() { return state.pinnedByDataset[state.currentKey]; }
+function setPinned(v) { state.pinnedByDataset[state.currentKey] = v; }
+
+function onEnter(i) { state.hoverId = i; applyState(i); }
+function onLeave() {
+  state.hoverId = null;
+  const p = getPinned();
+  if (p !== null) applyState(p);
+  else clearAll();
+}
+function onToggle(i) {
+  if (getPinned() === i) {
+    setPinned(null);
+    if (state.hoverId !== null) applyState(state.hoverId);
+    else clearAll();
+  } else {
+    setPinned(i);
+    applyState(i);
+  }
+  renderPanel();
+  updateGreimas();
+}
+
+function applyState(i) {
+  const D = state.D;
+  state.nodeEls.forEach((el, k) => {
+    el.classList.remove('hovered','ancestor','descendant');
+    if (k === i) el.classList.add('hovered');
+    else if (D.ANCS[i].has(k)) el.classList.add('ancestor');
+    else if (D.DESC[i].has(k)) el.classList.add('descendant');
+  });
+  state.edgeEls.forEach(line => {
+    line.classList.remove('ancestor','descendant');
+    const a = parseInt(line.dataset.a);
+    const b = parseInt(line.dataset.b);
+    const isAbove = (a === i) || D.ANCS[i].has(a);
+    const isBelow = (b === i) || D.DESC[i].has(b);
+    if (isAbove) line.classList.add('ancestor');
+    else if (isBelow) line.classList.add('descendant');
+  });
+  updatePanel(i);
+  updateScatter(i);
+}
+
+function clearAll() {
+  state.nodeEls.forEach(el => el.classList.remove('hovered','ancestor','descendant'));
+  state.edgeEls.forEach(line => line.classList.remove('ancestor','descendant'));
+  document.getElementById('info-card').innerHTML =
+    '<h2>Node</h2><div class="hint">Hover a node in the lattice to preview. Click to pin.</div>';
+  updateScatter(null);
+}
+
+function refreshPins() {
+  const p = getPinned();
+  state.nodeEls.forEach((el, k) => { el.classList.toggle('pinned', k === p); });
+}
+
+// =========================================================
+// PANEL
+// =========================================================
+
+function chipList(arr, cls) {
+  return arr.map(x => `<span class="chip ${cls}">${x}</span>`).join('');
+}
+function chipNodes(ids, cls) {
+  const D = state.D;
+  return ids.map(j => `<span class="chip ${cls}">${D.concepts[j].short}</span>`).join(' ');
+}
+
+function renderPanel() {
+  const p = getPinned();
+  if (p !== null) updatePanel(p);
+  else if (state.hoverId !== null) updatePanel(state.hoverId);
+  else clearAll();
+}
+
+function updatePanel(i) {
+  const D = state.D;
+  const c = D.concepts[i];
+  const N = D.N;
+
+  const joinsByResult = {};
+  for (let j = 0; j < N; j++) {
+    if (j === i) continue;
+    const r = D.join(i, j);
+    (joinsByResult[r] ||= []).push(j);
+  }
+  const meetsByResult = {};
+  for (let j = 0; j < N; j++) {
+    if (j === i) continue;
+    const r = D.meet(i, j);
+    (meetsByResult[r] ||= []).push(j);
+  }
+  const asJoinOf = [];
+  for (let x = 0; x < N; x++) {
+    if (x === i) continue;
+    for (let y = x + 1; y < N; y++) {
+      if (y === i) continue;
+      if (D.join(x, y) === i) asJoinOf.push([x, y]);
+    }
+  }
+  const asMeetOf = [];
+  for (let x = 0; x < N; x++) {
+    if (x === i) continue;
+    for (let y = x + 1; y < N; y++) {
+      if (y === i) continue;
+      if (D.meet(x, y) === i) asMeetOf.push([x, y]);
+    }
+  }
+
+  const pinnedBadge = (getPinned() === i)
+    ? `<span class="pin-badge">📌 pinned</span>`
+    : `<span class="pin-hint">click to pin</span>`;
+
+  let html = `<h2>Node</h2>`;
+  html += `<div class="node-title">${c.name} ${pinnedBadge}</div>`;
+
+  html += `<div class="section-title first">Extent</div>`;
+  html += c.extent.length
+    ? `<div class="chips">${chipList(c.extent, 'obj')}</div>`
+    : `<div class="hint" style="font-size:12px;">∅ — nothing</div>`;
+
+  html += `<div class="section-title">Intent</div>`;
+  html += c.intent.length
+    ? `<div class="chips">${chipList(c.intent, 'attr')}</div>`
+    : `<div class="hint" style="font-size:12px;">∅ — nothing shared</div>`;
+
+  if (D.greimas) {
+    const gKey = D.greimas.mapping[i];
+    if (gKey !== undefined) {
+      const gNode = D.greimas.nodes[gKey];
+      const info = D.greimasInfo ? D.greimasInfo[gKey] : null;
+      html += `<div class="section-title">Greimas Square</div>`;
+      html += `<div class="kv">Corresponds to <span class="chip self">${gNode.label}</span> in the Greimas square below.</div>`;
+      if (info) {
+        html += `<div class="kv" style="margin-top:8px;"><span class="k">${info.type}</span></div>`;
+        if (info.fulfill && info.fulfill.length) {
+          html += `<div class="kv" style="margin-top:8px;color:#b8bed4;font-weight:600;font-size:12px;">How it fulfills the requirements:</div>`;
+          info.fulfill.forEach(f => { html += `<div class="bullet">${f}</div>`; });
+        }
+        if (info.relations && info.relations.length) {
+          html += `<div class="kv" style="margin-top:8px;color:#b8bed4;font-weight:600;font-size:12px;">Relations:</div>`;
+          info.relations.forEach(r => { html += `<div class="bullet">${r}</div>`; });
+        }
+        if (info.note) {
+          html += `<div class="kv" style="margin-top:8px;color:var(--text-dim);font-size:12.5px;">${info.note}</div>`;
+        }
+      }
+    } else {
+      html += `<div class="section-title">Greimas Square</div>`;
+      html += `<div class="kv" style="color:var(--text-dim);font-size:12.5px;">This concept has no counterpart in the Greimas square. It appears in the lattice only — marked with an X when highlighted.</div>`;
+    }
+  }
+
+  html += `<div class="section-title">Hierarchy</div>`;
+  html += `<div class="kv"><span class="k">Covered by:</span> ${
+    D.parents[i].length ? chipNodes(D.parents[i], 'anc')
+                        : `<span class="hint" style="font-size:12px;">nothing (top)</span>`
+  }</div>`;
+  html += `<div class="kv"><span class="k">Covers:</span> ${
+    D.children[i].length ? chipNodes(D.children[i], 'desc')
+                         : `<span class="hint" style="font-size:12px;">nothing (bottom)</span>`
+  }</div>`;
+
+  html += `<div class="section-title">Joins with other nodes</div>`;
+  html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊔ each other node:</div>`;
+  Object.keys(joinsByResult).sort((a,b)=>+a - +b).forEach(r => {
+    html += `<div class="kv"><span class="arrow-anc">⊔ → ${D.concepts[r].short}</span><br>`;
+    html += `with ${chipNodes(joinsByResult[r], '')}</div>`;
+  });
+
+  html += `<div class="section-title">Meets with other nodes</div>`;
+  html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊓ each other node:</div>`;
+  Object.keys(meetsByResult).sort((a,b)=>+a - +b).forEach(r => {
+    html += `<div class="kv"><span class="arrow-desc">⊓ → ${D.concepts[r].short}</span><br>`;
+    html += `with ${chipNodes(meetsByResult[r], '')}</div>`;
+  });
+
+  if (asJoinOf.length) {
+    html += `<div class="section-title">This node as a join</div>`;
+    asJoinOf.forEach(([x, y]) => {
+      html += `<div class="kv"><span class="chip self">${D.concepts[x].short} ⊔ ${D.concepts[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
+    });
+  }
+  if (asMeetOf.length) {
+    html += `<div class="section-title">This node as a meet</div>`;
+    asMeetOf.forEach(([x, y]) => {
+      html += `<div class="kv"><span class="chip self">${D.concepts[x].short} ⊓ ${D.concepts[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
+    });
+  }
+  document.getElementById('info-card').innerHTML = html;
+}
+
+// =========================================================
+// SCATTER UPDATE
+// =========================================================
+
+function updateScatter(i) {
+  const D = state.D;
+  const p = getPinned();
+
+  state.scDotEls.forEach(({ dot, ring, ids, baseR }) => {
+    let s = 'neutral';
+    if (i !== null) {
+      if (ids.includes(i)) s = 'hovered';
+      else if (ids.some(id => D.ANCS[i].has(id))) s = 'ancestor';
+      else if (ids.some(id => D.DESC[i].has(id))) s = 'descendant';
+    }
+    if (s === 'neutral') {
+      dot.setAttribute('r', baseR);
+      dot.setAttribute('fill', '#5b9bd5');
+      dot.style.filter = 'none';
+    } else if (s === 'hovered') {
+      dot.setAttribute('r', baseR * 1.35);
+      dot.setAttribute('fill', '#ffd23f');
+      dot.style.filter = 'drop-shadow(0 0 10px rgba(255,210,63,1))';
+    } else if (s === 'ancestor') {
+      dot.setAttribute('r', baseR * 1.08);
+      dot.setAttribute('fill', '#ff8c42');
+      dot.style.filter = 'drop-shadow(0 0 6px rgba(255,140,66,.7))';
+    } else if (s === 'descendant') {
+      dot.setAttribute('r', baseR * 1.08);
+      dot.setAttribute('fill', '#e63946');
+      dot.style.filter = 'drop-shadow(0 0 6px rgba(230,57,70,.7))';
+    }
+    ring.style.display = (p !== null && ids.includes(p)) ? 'block' : 'none';
+  });
+
+  state.scLegendRows.forEach(({ marker, label, conceptId }) => {
+    let s = 'neutral';
+    if (i !== null) {
+      if (conceptId === i) s = 'hovered';
+      else if (D.ANCS[i].has(conceptId)) s = 'ancestor';
+      else if (D.DESC[i].has(conceptId)) s = 'descendant';
+      else s = 'dim';
+    }
+    if (s === 'neutral') {
+      marker.setAttribute('fill', '#5b9bd5'); label.setAttribute('fill', '#c8cde0');
+    } else if (s === 'hovered') {
+      marker.setAttribute('fill', '#ffd23f'); label.setAttribute('fill', '#ffd23f');
+    } else if (s === 'ancestor') {
+      marker.setAttribute('fill', '#ff8c42'); label.setAttribute('fill', '#ff8c42');
+    } else if (s === 'descendant') {
+      marker.setAttribute('fill', '#e63946'); label.setAttribute('fill', '#e63946');
+    } else {
+      marker.setAttribute('fill', '#3a3f55'); label.setAttribute('fill', '#5a6080');
+    }
+  });
+  refreshPins();
+}
+
+// =========================================================
+// TAB SWITCHING
+// =========================================================
+
+function switchTo(key) {
+  state.currentKey = key;
+  state.D = processDataset(DATASETS[key]);
+  state.hoverId = null;
+
+  document.getElementById('page-title').textContent = state.D.title;
+  document.getElementById('page-subtitle').textContent = state.D.subtitle;
+
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.key === key);
+  });
+
+  buildLattice();
+  buildScatter();
+  buildGreimas();
+
+  const p = getPinned();
+  if (p !== null) applyState(p);
+  else clearAll();
+  renderPanel();
+  updateGreimas();
+}
+
+const TAB_LABELS = {
+  planets: 'Solar System',
+  freedom2: 'Freedom (2 axes)',
+  custom: 'Custom'
+};
+
+function buildTabs() {
+  const bar = document.getElementById('tabbar');
+  bar.innerHTML = '';
+  Object.keys(DATASETS).forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.dataset.key = key;
+    btn.textContent = TAB_LABELS[key] || key;
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      if (state.currentKey !== key) switchTo(key);
+    });
+    bar.appendChild(btn);
+  });
+}
+
+// =========================================================
+// JSON → DATASET
+// =========================================================
+
+function buildGreimasInfo(square) {
+  const S1 = square.S1, S2 = square.S2, NS2 = square['~S2'], NS1 = square['~S1'];
+  const b = s => `<b>${s}</b>`;
+  const k = (cls, s) => `<span class="relation-key ${cls}">${s}</span>`;
+
+  return {
+    'S1': {
+      type: 'Inner term — S1 (positive pole)',
+      fulfill: [
+        `Contrary to ${b(S2)}: both can hold together, both can fail together, or either can hold alone.`,
+        `Contradictory to ${b(NS1)}: every subject satisfies exactly one of the pair.`,
+        `Implied by ${b(NS2)}: any subject satisfying ${NS2} also satisfies ${S1}.`
+      ],
+      relations: [
+        `Contrary: ${k('contr', S2)}`,
+        `Contradictory: ${k('contra', NS1)}`,
+        `Implied by: ${k('impl', NS2)}`
+      ]
+    },
+    'S2': {
+      type: 'Inner term — S2 (positive pole)',
+      fulfill: [
+        `Contrary to ${b(S1)}: both can hold together, both can fail together, or either can hold alone.`,
+        `Contradictory to ${b(NS2)}: every subject satisfies exactly one of the pair.`,
+        `Implied by ${b(NS1)}: any subject satisfying ${NS1} also satisfies ${S2}.`
+      ],
+      relations: [
+        `Contrary: ${k('contr', S1)}`,
+        `Contradictory: ${k('contra', NS2)}`,
+        `Implied by: ${k('impl', NS1)}`
+      ]
+    },
+    'NS2': {
+      type: 'Inner term — ~S2 (contradictory of S2)',
+      fulfill: [
+        `Contradictory to ${b(S2)}: exactly one of the pair holds.`,
+        `Contrary to ${b(NS1)}: both can hold together, both can fail together, or either can hold alone.`,
+        `Implies ${b(S1)}: every subject satisfying ${NS2} also satisfies ${S1}.`
+      ],
+      relations: [
+        `Contradictory: ${k('contra', S2)}`,
+        `Contrary: ${k('contr', NS1)}`,
+        `Implies: ${k('impl', S1)}`
+      ]
+    },
+    'NS1': {
+      type: 'Inner term — ~S1 (contradictory of S1)',
+      fulfill: [
+        `Contradictory to ${b(S1)}: exactly one of the pair holds.`,
+        `Contrary to ${b(NS2)}: both can hold together, both can fail together, or either can hold alone.`,
+        `Implies ${b(S2)}: every subject satisfying ${NS1} also satisfies ${S2}.`
+      ],
+      relations: [
+        `Contradictory: ${k('contra', S1)}`,
+        `Contrary: ${k('contr', NS2)}`,
+        `Implies: ${k('impl', S2)}`
+      ]
+    },
+    'M11': {
+      type: 'Meta-term — Complex axis (S1 + S2)',
+      fulfill: [], relations: [],
+      note: `Not an inner term. It is the join of the two positive poles. Contrariety, contradictoriness, and implication apply to its inner components, not to it directly. Composition: ${b(S1 + ' + ' + S2)}.`
+    },
+    'M12': {
+      type: 'Meta-term — Neutral axis (~S1 + ~S2)',
+      fulfill: [], relations: [],
+      note: `Not an inner term. It is the join of the two negative poles. Contrariety, contradictoriness, and implication apply to its inner components, not to it directly. Composition: ${b(NS1 + ' + ' + NS2)}.`
+    },
+    'M13': {
+      type: 'Meta-term — Positive deixis (S1 + ~S2)',
+      fulfill: [], relations: [],
+      note: `Not an inner term. This is the pair connected by the implication ~S2 → S1. It combines the implied with its implier. Composition: ${b(S1 + ' + ' + NS2)}.`
+    },
+    'M14': {
+      type: 'Meta-term — Negative deixis (S2 + ~S1)',
+      fulfill: [], relations: [],
+      note: `Not an inner term. This is the pair connected by the implication ~S1 → S2. Composition: ${b(S2 + ' + ' + NS1)}.`
+    },
+    'M21': {
+      type: 'Second-tier meta-term (M₂) — omits ~S1',
+      fulfill: [], relations: [],
+      note: `Contains three of the four inner terms. Composition: ${b(S1 + ' + ' + S2 + ' + ' + NS2)}.`
+    },
+    'M22': {
+      type: 'Second-tier meta-term (M₂) — omits ~S2',
+      fulfill: [], relations: [],
+      note: `Contains three of the four inner terms. Composition: ${b(S1 + ' + ' + S2 + ' + ' + NS1)}.`
+    },
+    'M23': {
+      type: 'Second-tier meta-term (M₂) — omits S2',
+      fulfill: [], relations: [],
+      note: `Contains three of the four inner terms. Composition: ${b(S1 + ' + ' + NS1 + ' + ' + NS2)}.`
+    },
+    'M24': {
+      type: 'Second-tier meta-term (M₂) — omits S1',
+      fulfill: [], relations: [],
+      note: `Contains three of the four inner terms. Composition: ${b(S2 + ' + ' + NS1 + ' + ' + NS2)}.`
+    }
+  };
+}
+
+function classifyExtent(ext, S1, S2, NS2, NS1) {
+  const set = new Set(ext);
+  const size = set.size;
+  const has = (...xs) => xs.every(x => set.has(x));
+  if (size === 0) return { role: 'bottom' };
+  if (size === 4) return { role: 'top' };
+  if (size === 1) {
+    if (set.has(S1))  return { role: 'inner', key: 'S1',  x: 0.18, y: 0.30 };
+    if (set.has(S2))  return { role: 'inner', key: 'S2',  x: 0.40, y: 0.30 };
+    if (set.has(NS2)) return { role: 'inner', key: 'NS2', x: 0.60, y: 0.30 };
+    if (set.has(NS1)) return { role: 'inner', key: 'NS1', x: 0.82, y: 0.30 };
+  }
+  if (size === 2) {
+    if (has(S1, S2))  return { role: 'm1', key: 'M11', x: 0.10, y: 0.52 };
+    if (has(S1, NS1)) return { role: 'mixed', key: 'Mixed1', x: 0.24, y: 0.52 };
+    if (has(S1, NS2)) return { role: 'm1', key: 'M13', x: 0.40, y: 0.52 };
+    if (has(S2, NS1)) return { role: 'm1', key: 'M14', x: 0.56, y: 0.52 };
+    if (has(S2, NS2)) return { role: 'mixed', key: 'Mixed2', x: 0.72, y: 0.52 };
+    if (has(NS1, NS2)) return { role: 'm1', key: 'M12', x: 0.90, y: 0.52 };
+  }
+  if (size === 3) {
+    if (has(S1, S2, NS1)) return { role: 'm2', key: 'M22', x: 0.10, y: 0.76 };
+    if (has(S1, S2, NS2)) return { role: 'm2', key: 'M21', x: 0.35, y: 0.76 };
+    if (has(S1, NS1, NS2)) return { role: 'm2', key: 'M23', x: 0.65, y: 0.76 };
+    if (has(S2, NS1, NS2)) return { role: 'm2', key: 'M24', x: 0.90, y: 0.76 };
+  }
+  return { role: 'unknown', x: 0.50, y: 0.50 };
+}
+
+function buildDatasetFromJson(parsed) {
+  if (!parsed || typeof parsed !== 'object') throw new Error('Top-level JSON is not an object.');
+  const { square, lattice, metadata } = parsed;
+  if (!square || typeof square !== 'object') throw new Error('Missing "square" section.');
+  if (!lattice || !Array.isArray(lattice.concepts) || !Array.isArray(lattice.edges)) {
+    throw new Error('Missing or invalid "lattice" section (need concepts and edges arrays).');
+  }
+  const required = ['S1','S2','~S2','~S1','M11','M12','M13','M14','M21','M22','M23','M24','Mixed1','Mixed2'];
+  for (const k of required) {
+    if (typeof square[k] !== 'string' || !square[k].trim()) {
+      throw new Error(`Missing or empty square.${k}`);
+    }
+  }
+
+  const S1 = square.S1.trim(), S2 = square.S2.trim();
+  const NS2 = square['~S2'].trim(), NS1 = square['~S1'].trim();
+
+  // Layout for greimas square (fixed positions)
+  const gnodes = {
+    'S1':  { x: 220, y: 190, label: S1,  tier: 'inner', labelPos: 'below' },
+    'S2':  { x: 400, y: 190, label: S2,  tier: 'inner', labelPos: 'below' },
+    'NS2': { x: 220, y: 330, label: NS2, tier: 'inner', labelPos: 'above' },
+    'NS1': { x: 400, y: 330, label: NS1, tier: 'inner', labelPos: 'above' },
+    'M11': { x: 310, y: 90,  label: square.M11, tier: 'm1', labelPos: 'below' },
+    'M13': { x: 120, y: 260, label: square.M13, tier: 'm1', labelPos: 'left'  },
+    'M14': { x: 500, y: 260, label: square.M14, tier: 'm1', labelPos: 'right' },
+    'M12': { x: 310, y: 430, label: square.M12, tier: 'm1', labelPos: 'above' },
+    'M21': { x: 70,  y: 50,  label: square.M21, tier: 'm2', labelPos: 'below' },
+    'M22': { x: 550, y: 50,  label: square.M22, tier: 'm2', labelPos: 'below' },
+    'M23': { x: 70,  y: 470, label: square.M23, tier: 'm2', labelPos: 'above' },
+    'M24': { x: 550, y: 470, label: square.M24, tier: 'm2', labelPos: 'above' }
+  };
+  const gedges = [
+    ['S1','S2','inner'], ['NS2','NS1','inner'],
+    ['S1','NS1','inner'], ['S2','NS2','inner'],
+    ['S1','NS2','inner'], ['S2','NS1','inner'],
+    ['S1','M11','inner-m1'], ['S2','M11','inner-m1'],
+    ['S1','M13','inner-m1'], ['NS2','M13','inner-m1'],
+    ['S2','M14','inner-m1'], ['NS1','M14','inner-m1'],
+    ['NS2','M12','inner-m1'], ['NS1','M12','inner-m1'],
+    ['M11','M21','m1-m2'], ['M11','M22','m1-m2'],
+    ['M13','M21','m1-m2'], ['M13','M23','m1-m2'],
+    ['M14','M22','m1-m2'], ['M14','M24','m1-m2'],
+    ['M12','M23','m1-m2'], ['M12','M24','m1-m2']
+  ];
+
+  // Add positions to concepts, and build greimas mapping
+  const greimasMapping = {};
+  const concepts = lattice.concepts.map(c => {
+    const ext = Array.isArray(c.extent) ? c.extent : [];
+    const cls = classifyExtent(ext, S1, S2, NS2, NS1);
+    let x = cls.x, y = cls.y;
+    if (cls.role === 'bottom') { x = 0.50; y = 0.06; }
+    if (cls.role === 'top')    { x = 0.50; y = 0.96; }
+    if (cls.key && cls.role !== 'mixed') {
+      greimasMapping[c.id] = cls.key;
+    }
+    return {
+      id: c.id,
+      label: c.label || c.short || `C${c.id}`,
+      short: c.short || c.label || `C${c.id}`,
+      name: c.name || c.label || `Concept ${c.id}`,
+      extent: ext,
+      intent: Array.isArray(c.intent) ? c.intent : [],
+      x, y
+    };
+  });
+
+  const titleSuffix = (metadata && metadata.s1_input && metadata.s2_input)
+    ? ` — ${metadata.s1_input} / ${metadata.s2_input}`
+    : '';
+
+  return {
+    title: `Concept Lattice${titleSuffix}`,
+    subtitle: 'Custom Greimas square. Four inner terms as objects; four M₂ meta-terms as attributes.',
+    viewBox: { w: 800, h: 700 },
+    padX: 70, padY: 80, nodeR: 24, labelLines: false,
+    scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42, maxExt: 4, maxInt: 4 },
+    concepts: concepts,
+    edges: lattice.edges,
+    greimas: {
+      viewBox: { w: 620, h: 520 },
+      nodes: gnodes,
+      edges: gedges,
+      mapping: greimasMapping
+    },
+    greimasInfo: buildGreimasInfo({S1, S2, '~S2': NS2, '~S1': NS1,
+                                   M11: square.M11, M12: square.M12,
+                                   M13: square.M13, M14: square.M14,
+                                   M21: square.M21, M22: square.M22,
+                                   M23: square.M23, M24: square.M24})
+  };
+}
+
+// =========================================================
+// JSON UPDATE HANDLER
+// =========================================================
+
+function handleJsonUpdate() {
+  const ta = document.getElementById('json-input');
+  const status = document.getElementById('json-status');
+  const raw = ta.value.trim();
+  if (!raw) {
+    status.className = 'json-status err';
+    status.textContent = 'Paste JSON first.';
+    return;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (e) {
+    status.className = 'json-status err';
+    status.textContent = `JSON parse error: ${e.message}`;
+    return;
+  }
+  let dataset;
+  try {
+    dataset = buildDatasetFromJson(parsed);
+  } catch (e) {
+    status.className = 'json-status err';
+    status.textContent = `Invalid structure: ${e.message}`;
+    return;
+  }
+  DATASETS.custom = dataset;
+  state.pinnedByDataset.custom = null;
+  buildTabs();
+  switchTo('custom');
+  status.className = 'json-status ok';
+  status.textContent = `Loaded. ${dataset.concepts.length} concepts, ${dataset.edges.length} edges.`;
+}
+
+// =========================================================
+// GLOBAL HANDLERS
+// =========================================================
+
+document.addEventListener('click', () => {
+  if (getPinned() !== null) {
+    setPinned(null);
+    if (state.hoverId !== null) applyState(state.hoverId);
+    else clearAll();
+    renderPanel();
+    updateGreimas();
+  }
+});
+
+document.getElementById('json-update-btn').addEventListener('click', (ev) => {
+  ev.stopPropagation();
+  handleJsonUpdate();
+});
+
+// =========================================================
+// INIT
+// =========================================================
+
+buildTabs();
+switchTo('planets');
+</script>
+</body>
+</html>
