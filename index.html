@@ -25,136 +25,87 @@
     background: var(--bg);
     color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 14px;
-    line-height: 1.5;
-    min-height: 100vh;
+    font-size: 14px; line-height: 1.5; min-height: 100vh;
   }
-  header {
-    padding: 22px 34px 14px;
-    border-bottom: 1px solid #2a2f45;
-  }
+  header { padding: 22px 34px 14px; border-bottom: 1px solid #2a2f45; }
   header h1 { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
   header p { margin: 0; color: var(--text-dim); font-size: 13px; }
 
-  .tabbar {
-    display: flex;
-    gap: 8px;
-    padding: 14px 34px 0;
-    flex-wrap: wrap;
-  }
+  .tabbar { display: flex; gap: 8px; padding: 14px 34px 0; flex-wrap: wrap; }
   .tab {
-    appearance: none;
-    border: 1px solid #2f3550;
-    background: var(--panel);
-    color: var(--text-dim);
-    padding: 8px 16px;
-    border-radius: 10px;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
+    appearance: none; border: 1px solid #2f3550; background: var(--panel);
+    color: var(--text-dim); padding: 8px 16px; border-radius: 10px;
+    font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
     transition: background .18s, color .18s, border-color .18s, box-shadow .18s;
   }
   .tab:hover { color: var(--text); border-color: #3d456b; }
   .tab.active {
-    background: #22304d;
-    color: #fff;
-    border-color: var(--accent);
+    background: #22304d; color: #fff; border-color: var(--accent);
     box-shadow: 0 0 0 1px var(--accent), 0 0 14px rgba(91,155,213,.35);
   }
 
   .legend {
     display: flex; gap: 18px; flex-wrap: wrap;
-    padding: 14px 34px 0;
-    font-size: 12px; color: var(--text-dim);
+    padding: 14px 34px 0; font-size: 12px; color: var(--text-dim);
   }
   .legend .dot {
     display: inline-block; width: 10px; height: 10px;
-    border-radius: 50%; margin-right: 6px;
-    vertical-align: middle;
+    border-radius: 50%; margin-right: 6px; vertical-align: middle;
     position: relative; top: -1px;
   }
 
   .container {
-    display: flex; gap: 22px;
-    padding: 14px 34px 40px;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    display: flex; gap: 22px; padding: 14px 34px 40px;
+    align-items: flex-start; flex-wrap: wrap;
   }
   #lattice-wrap { flex: 1 1 640px; min-width: 380px; }
   #panel { flex: 0 1 520px; min-width: 400px; }
 
   #lattice {
-    background: var(--panel);
-    border-radius: 14px;
-    width: 100%; height: auto;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-    display: block;
+    background: var(--panel); border-radius: 14px; width: 100%; height: auto;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.35); display: block;
   }
 
   .node { cursor: pointer; }
   .node circle {
-    fill: var(--node);
-    stroke: var(--node-edge);
-    stroke-width: 1.5;
+    fill: var(--node); stroke: var(--node-edge); stroke-width: 1.5;
     transition: fill .25s, stroke .25s, r .25s;
   }
   .node text {
-    fill: #c8cde0;
-    font-size: 10.5px;
-    font-weight: 600;
-    text-anchor: middle;
-    pointer-events: none;
-    user-select: none;
+    fill: #c8cde0; font-size: 10.5px; font-weight: 600;
+    text-anchor: middle; pointer-events: none; user-select: none;
   }
   .edge {
-    stroke: var(--edge);
-    stroke-width: 1.4;
+    stroke: var(--edge); stroke-width: 1.4;
     transition: stroke .25s, stroke-width .25s, stroke-opacity .25s;
   }
-
   .node.hovered circle {
-    fill: var(--hover);
-    stroke: #fff3c4;
-    stroke-width: 3;
+    fill: var(--hover); stroke: #fff3c4; stroke-width: 3;
     filter: drop-shadow(0 0 14px rgba(255,210,63,.85));
   }
   .node.ancestor circle {
-    fill: var(--anc);
-    stroke: #ffcfae;
-    stroke-width: 2;
+    fill: var(--anc); stroke: #ffcfae; stroke-width: 2;
     animation: pulseNodeOrange 1.9s ease-in-out infinite;
   }
   .node.descendant circle {
-    fill: var(--desc);
-    stroke: #ffb0b8;
-    stroke-width: 2;
+    fill: var(--desc); stroke: #ffb0b8; stroke-width: 2;
     animation: pulseNodeRed 1.9s ease-in-out infinite;
   }
   .edge.ancestor {
-    stroke: var(--anc);
-    stroke-width: 3;
+    stroke: var(--anc); stroke-width: 3;
     animation: pulseEdgeOrange 1.9s ease-in-out infinite;
   }
   .edge.descendant {
-    stroke: var(--desc);
-    stroke-width: 3;
+    stroke: var(--desc); stroke-width: 3;
     animation: pulseEdgeRed 1.9s ease-in-out infinite;
   }
-
   .node.pinned .pin-ring { display: block; }
   .pin-ring {
-    display: none;
-    fill: none;
-    stroke: #fff;
-    stroke-width: 2;
-    stroke-dasharray: 4 4;
-    opacity: 0.9;
-    pointer-events: none;
+    display: none; fill: none; stroke: #fff; stroke-width: 2;
+    stroke-dasharray: 4 4; opacity: 0.9; pointer-events: none;
     animation: rotateDash 8s linear infinite;
   }
   @keyframes rotateDash { to { stroke-dashoffset: -80; } }
-
   @keyframes pulseNodeOrange {
     0%, 100% { filter: drop-shadow(0 0 3px rgba(255,140,66,.4)); }
     50%      { filter: drop-shadow(0 0 16px rgba(255,140,66,1)); }
@@ -164,94 +115,61 @@
     50%      { filter: drop-shadow(0 0 16px rgba(230,57,70,1)); }
   }
   @keyframes pulseEdgeOrange {
-    0%, 100% { stroke-opacity: .55; }
-    50%      { stroke-opacity: 1; }
+    0%, 100% { stroke-opacity: .55; } 50% { stroke-opacity: 1; }
   }
   @keyframes pulseEdgeRed {
-    0%, 100% { stroke-opacity: .55; }
-    50%      { stroke-opacity: 1; }
+    0%, 100% { stroke-opacity: .55; } 50% { stroke-opacity: 1; }
   }
 
   .card {
-    background: var(--panel);
-    border-radius: 14px;
-    padding: 18px 20px 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-    max-height: 72vh;
-    overflow-y: auto;
+    background: var(--panel); border-radius: 14px; padding: 18px 20px 20px;
+    margin-bottom: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+    max-height: 72vh; overflow-y: auto;
   }
   .card h2 {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .1em;
-    color: var(--text-dim);
-    margin: 0 0 10px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--text-dim); margin: 0 0 10px;
   }
   .node-title {
-    font-size: 17px; font-weight: 700;
-    color: var(--hover);
-    margin-bottom: 14px;
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    font-size: 17px; font-weight: 700; color: var(--hover);
+    margin-bottom: 14px; letter-spacing: -0.01em;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   }
   .pin-badge {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    color: #ffe9a8;
-    background: #4a3a1a;
-    border: 1px solid #8c6a2a;
-    padding: 2px 8px;
-    border-radius: 10px;
+    font-size: 10px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: #ffe9a8; background: #4a3a1a;
+    border: 1px solid #8c6a2a; padding: 2px 8px; border-radius: 10px;
   }
   .pin-hint {
-    font-size: 11px;
-    color: var(--text-dim);
-    font-weight: 400;
-    letter-spacing: 0;
-    text-transform: none;
+    font-size: 11px; color: var(--text-dim); font-weight: 400;
+    letter-spacing: 0; text-transform: none;
   }
   .section-title {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .08em;
-    color: var(--text-dim);
-    margin: 16px 0 6px;
-    border-top: 1px solid #2a2f45;
-    padding-top: 12px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--text-dim); margin: 16px 0 6px;
+    border-top: 1px solid #2a2f45; padding-top: 12px;
   }
   .section-title.first { border-top: none; padding-top: 0; margin-top: 0; }
   .kv { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
   .kv .k { color: var(--text-dim); }
   .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
   .chip {
-    display: inline-block;
-    padding: 2px 9px;
-    border-radius: 10px;
-    font-size: 11.5px;
-    background: var(--panel-2);
-    color: var(--text);
-    border: 1px solid #3a3f55;
-    white-space: nowrap;
+    display: inline-block; padding: 2px 9px; border-radius: 10px;
+    font-size: 11.5px; background: var(--panel-2); color: var(--text);
+    border: 1px solid #3a3f55; white-space: nowrap;
   }
   .chip.obj { background: #23324d; border-color: #4a6a9a; color: #cce0ff; }
   .chip.attr { background: #33254d; border-color: #6a4a9a; color: #e0ccff; }
   .chip.anc { background: #4a2a1a; border-color: #8c4a2a; color: #ffd1b3; }
   .chip.desc { background: #4a1a2a; border-color: #8c2a3a; color: #ffb8c4; }
   .chip.self { background: #4a3a1a; border-color: #8c6a2a; color: #fff0b3; font-weight: 600; }
-
   .hint { color: var(--text-dim); font-size: 13px; font-style: italic; }
 
-  #scatter { background: var(--panel); border-radius: 14px; width: 100%; display: block; box-shadow: 0 6px 24px rgba(0,0,0,0.35); }
+  #scatter {
+    background: var(--panel); border-radius: 14px; width: 100%;
+    display: block; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  }
   .scatter-hint { color: var(--text-dim); font-size: 11.5px; margin-top: 8px; text-align: center; }
-
   .arrow-anc { color: var(--anc); font-weight: 700; }
   .arrow-desc { color: var(--desc); font-weight: 700; }
 </style>
@@ -300,11 +218,8 @@ const DATASETS = {
     title: 'Concept Lattice — Solar System',
     subtitle: 'Hover a node to preview its joins and meets. Click to pin. Click again to release.',
     viewBox: { w: 800, h: 660 },
-    padX: 100, padY: 90,
-    nodeR: 26,
-    labelLines: false,
-    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42,
-               maxExt: 6, maxInt: 6 },
+    padX: 100, padY: 90, nodeR: 26, labelLines: false,
+    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42, maxExt: 6, maxInt: 6 },
     concepts: [
       { id: 0, label: '⊥', short: 'Bottom',
         name: 'Bottom — empty extent, all attributes',
@@ -355,11 +270,8 @@ const DATASETS = {
     title: 'Concept Lattice — Freedom',
     subtitle: 'Four binary oppositions: non-interference, available options, effective agency, authenticity.',
     viewBox: { w: 800, h: 720 },
-    padX: 70, padY: 80,
-    nodeR: 22,
-    labelLines: true,
-    scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42,
-               maxExt: 15, maxInt: 4 },
+    padX: 70, padY: 80, nodeR: 22, labelLines: true,
+    scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42, maxExt: 15, maxInt: 4 },
     concepts: [
       { id: 0, label: 'Full · freedom', short: 'FF',
         name: 'Full freedom — all four attributes present',
@@ -465,15 +377,129 @@ const DATASETS = {
     ]
   },
 
+  meaning: {
+    title: 'Concept Lattice — Meaning / Saying',
+    subtitle: 'A Greimas square of communication. Four inner terms as objects; four derived meta-terms as attributes. The lattice is B₄, isomorphic to K₂ and the freedom lattice.',
+    viewBox: { w: 800, h: 700 },
+    padX: 70, padY: 80, nodeR: 24, labelLines: true,
+    scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42, maxExt: 4, maxInt: 4 },
+    concepts: [
+      // Bottom — empty extent, all four M₂ attributes
+      { id: 0, label: '⊥', short: 'Bottom',
+        name: 'Bottom — empty extent, all four M₂ attributes',
+        extent: [],
+        intent: ['Expressed','Grounded','Unspoken','Uncommitted'],
+        x: 0.50, y: 0.06 },
+
+      // Row 1 — the four inner terms as object concepts
+      { id: 1, label: 'Meaning', short: 'M',
+        name: 'Meaning — the inner term S1',
+        extent: ['Meaning'],
+        intent: ['Expressed','Grounded','Unspoken'],
+        x: 0.18, y: 0.30 },
+      { id: 2, label: 'Saying', short: 'S',
+        name: 'Saying — the inner term S2',
+        extent: ['Saying'],
+        intent: ['Expressed','Grounded','Uncommitted'],
+        x: 0.40, y: 0.30 },
+      { id: 3, label: 'Non-meaning', short: 'NM',
+        name: 'Non-meaning — the inner term ~S1',
+        extent: ['Non-meaning'],
+        intent: ['Expressed','Unspoken','Uncommitted'],
+        x: 0.60, y: 0.30 },
+      { id: 4, label: 'Non-saying', short: 'NS',
+        name: 'Non-saying — the inner term ~S2',
+        extent: ['Non-saying'],
+        intent: ['Grounded','Unspoken','Uncommitted'],
+        x: 0.82, y: 0.30 },
+
+      // Row 2 — six pair concepts
+      { id: 5, label: 'Sincere · speech', short: 'SS',
+        name: 'Sincere speech — meaning and saying together (M₁ term)',
+        extent: ['Meaning','Saying'],
+        intent: ['Expressed','Grounded'],
+        x: 0.10, y: 0.52 },
+      { id: 6, label: 'Mixed · meaning', short: 'MM',
+        name: 'Mixed meaning — meaning and non-meaning together',
+        extent: ['Meaning','Non-meaning'],
+        intent: ['Expressed','Unspoken'],
+        x: 0.24, y: 0.52 },
+      { id: 7, label: 'Tacit · meaning', short: 'TM',
+        name: 'Tacit meaning — meaning without saying (M₁ term)',
+        extent: ['Meaning','Non-saying'],
+        intent: ['Grounded','Unspoken'],
+        x: 0.40, y: 0.52 },
+      { id: 8, label: 'Empty · speech', short: 'ES',
+        name: 'Empty speech — saying without meaning (M₁ term)',
+        extent: ['Saying','Non-meaning'],
+        intent: ['Expressed','Uncommitted'],
+        x: 0.56, y: 0.52 },
+      { id: 9, label: 'Mixed · saying', short: 'MS',
+        name: 'Mixed saying — saying and non-saying together',
+        extent: ['Saying','Non-saying'],
+        intent: ['Grounded','Uncommitted'],
+        x: 0.72, y: 0.52 },
+      { id: 10, label: 'Silence', short: 'Sil',
+        name: 'Silence — neither meaning nor saying (M₁ term)',
+        extent: ['Non-meaning','Non-saying'],
+        intent: ['Unspoken','Uncommitted'],
+        x: 0.90, y: 0.52 },
+
+      // Row 3 — the four M₂ attributes
+      { id: 11, label: 'Expressed', short: 'R',
+        name: 'Expressed — the M₂ term omitting non-saying',
+        extent: ['Meaning','Saying','Non-meaning'],
+        intent: ['Expressed'],
+        x: 0.10, y: 0.76 },
+      { id: 12, label: 'Grounded', short: 'P',
+        name: 'Grounded — the M₂ term omitting non-meaning',
+        extent: ['Meaning','Saying','Non-saying'],
+        intent: ['Grounded'],
+        x: 0.35, y: 0.76 },
+      { id: 13, label: 'Unspoken', short: 'U',
+        name: 'Unspoken — the M₂ term omitting saying',
+        extent: ['Meaning','Non-meaning','Non-saying'],
+        intent: ['Unspoken'],
+        x: 0.65, y: 0.76 },
+      { id: 14, label: 'Uncommitted', short: 'D',
+        name: 'Uncommitted — the M₂ term omitting meaning',
+        extent: ['Saying','Non-meaning','Non-saying'],
+        intent: ['Uncommitted'],
+        x: 0.90, y: 0.76 },
+
+      // Top
+      { id: 15, label: '⊤', short: 'Top',
+        name: 'Top — all inner terms, no shared attribute',
+        extent: ['Meaning','Saying','Non-meaning','Non-saying'],
+        intent: [],
+        x: 0.50, y: 0.96 }
+    ],
+    edges: [
+      // Top to the four M₂ attribute concepts
+      [15, 11], [15, 12], [15, 13], [15, 14],
+      // M₂ to the three pairs each contains
+      [11, 5], [11, 6], [11, 8],
+      [12, 5], [12, 7], [12, 9],
+      [13, 6], [13, 7], [13, 10],
+      [14, 8], [14, 9], [14, 10],
+      // Pairs to the two object concepts each contains
+      [5, 1], [5, 2],
+      [6, 1], [6, 3],
+      [7, 1], [7, 4],
+      [8, 2], [8, 3],
+      [9, 2], [9, 4],
+      [10, 3], [10, 4],
+      // Objects to bottom
+      [1, 0], [2, 0], [3, 0], [4, 0]
+    ]
+  },
+
   freedom2: {
     title: 'Concept Lattice — Freedom (Two Axes)',
     subtitle: 'Two binary oppositions: non-interference and available options.',
     viewBox: { w: 800, h: 600 },
-    padX: 100, padY: 100,
-    nodeR: 26,
-    labelLines: false,
-    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42,
-               maxExt: 4, maxInt: 2 },
+    padX: 100, padY: 100, nodeR: 26, labelLines: false,
+    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42, maxExt: 4, maxInt: 2 },
     concepts: [
       { id: 0, label: '⊥', short: 'Bottom',
         name: 'Bottom — no scenario, both attributes',
@@ -510,13 +536,10 @@ const DATASETS = {
 
 const state = {
   currentKey: 'planets',
-  pinnedByDataset: { planets: null, freedom: null, freedom2: null },
+  pinnedByDataset: { planets: null, freedom: null, meaning: null, freedom2: null },
   hoverId: null,
   D: null,
-  nodeEls: [],
-  edgeEls: [],
-  scDotEls: [],
-  scLegendRows: []
+  nodeEls: [], edgeEls: [], scDotEls: [], scLegendRows: []
 };
 
 // =========================================================
@@ -1137,6 +1160,7 @@ function buildTabs() {
   const labels = {
     planets: 'Solar System',
     freedom: 'Freedom (4 axes)',
+    meaning: 'Meaning / Saying',
     freedom2: 'Freedom (2 axes)'
   };
   Object.keys(DATASETS).forEach(key => {
