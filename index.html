@@ -55,10 +55,7 @@
     cursor: pointer;
     transition: background .18s, color .18s, border-color .18s, box-shadow .18s;
   }
-  .tab:hover {
-    color: var(--text);
-    border-color: #3d456b;
-  }
+  .tab:hover { color: var(--text); border-color: #3d456b; }
   .tab.active {
     background: #22304d;
     color: #fff;
@@ -466,7 +463,45 @@ const DATASETS = {
       [10, 3], [10, 4],
       [1, 0], [2, 0], [3, 0], [4, 0]
     ]
+  },
+
+  freedom2: {
+    title: 'Concept Lattice — Freedom (Two Axes)',
+    subtitle: 'Two binary oppositions: non-interference and available options.',
+    viewBox: { w: 800, h: 600 },
+    padX: 100, padY: 100,
+    nodeR: 26,
+    labelLines: false,
+    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42,
+               maxExt: 4, maxInt: 2 },
+    concepts: [
+      { id: 0, label: '⊥', short: 'Bottom',
+        name: 'Bottom — no scenario, both attributes',
+        extent: [],
+        intent: ['Non-interference','Available options'],
+        x: 0.50, y: 0.06 },
+      { id: 1, label: 'Non-interference', short: 'NI',
+        name: 'Non-interference — left alone, but no alternatives',
+        extent: ['No alternatives','Free citizen'],
+        intent: ['Non-interference'],
+        x: 0.20, y: 0.50 },
+      { id: 2, label: 'Available options', short: 'AO',
+        name: 'Available options — under coercion, but with choices',
+        extent: ['Coerced chooser','Free citizen'],
+        intent: ['Available options'],
+        x: 0.80, y: 0.50 },
+      { id: 3, label: '⊤', short: 'Top',
+        name: 'Top — all scenarios, no shared attribute',
+        extent: ['No alternatives','Coerced chooser','Free citizen','Trapped'],
+        intent: [],
+        x: 0.50, y: 0.94 }
+    ],
+    edges: [
+      [0, 1], [0, 2],
+      [1, 3], [2, 3]
+    ]
   }
+
 };
 
 // =========================================================
@@ -475,9 +510,9 @@ const DATASETS = {
 
 const state = {
   currentKey: 'planets',
-  pinnedByDataset: { planets: null, freedom: null },
+  pinnedByDataset: { planets: null, freedom: null, freedom2: null },
   hoverId: null,
-  D: null,             // current processed dataset
+  D: null,
   nodeEls: [],
   edgeEls: [],
   scDotEls: [],
@@ -485,7 +520,7 @@ const state = {
 };
 
 // =========================================================
-// 3. PROCESSING — build derived structures for a dataset
+// 3. PROCESSING
 // =========================================================
 
 function processDataset(raw) {
@@ -549,20 +584,14 @@ function processDataset(raw) {
     return inter[0];
   }
 
-  return Object.assign({}, raw, {
-    N, parents, children, ANCS, DESC, join, meet
-  });
+  return Object.assign({}, raw, { N, parents, children, ANCS, DESC, join, meet });
 }
 
 // =========================================================
-// 4. SVG HELPERS
+// 4. LATTICE BUILD
 // =========================================================
 
 const svgNS = 'http://www.w3.org/2000/svg';
-
-// =========================================================
-// 5. LATTICE BUILD + RENDER
-// =========================================================
 
 function buildLattice() {
   const D = state.D;
@@ -609,8 +638,6 @@ function buildLattice() {
     circle.setAttribute('r', NODE_R);
     g.appendChild(circle);
 
-    // Label placement: for two-line labels (freedom), split on " · "
-    // For single-line (planets), the label may itself contain " · "
     const lines = D.labelLines ? c.label.split(' · ') : [c.label];
     lines.forEach((ln, k) => {
       const t = document.createElementNS(svgNS, 'text');
@@ -631,7 +658,7 @@ function buildLattice() {
 }
 
 // =========================================================
-// 6. SCATTER BUILD
+// 5. SCATTER BUILD
 // =========================================================
 
 function buildScatter() {
@@ -655,7 +682,6 @@ function buildScatter() {
   const scX = v => SC_PAD_L + (v / MAX_EXT) * SC_INNER_W;
   const scY = v => SC_H - SC_PAD_B - (v / MAX_INT) * SC_INNER_H;
 
-  // --- grid ---
   for (let k = 0; k <= MAX_INT; k++) {
     const l = document.createElementNS(svgNS, 'line');
     l.setAttribute('x1', scX(0)); l.setAttribute('y1', scY(k));
@@ -663,20 +689,17 @@ function buildScatter() {
     l.setAttribute('stroke', '#222a45'); l.setAttribute('stroke-width', 1);
     scatter.appendChild(l);
   }
-  // --- axes ---
   const ax = document.createElementNS(svgNS, 'line');
   ax.setAttribute('x1', scX(0)); ax.setAttribute('y1', scY(0));
   ax.setAttribute('x2', scX(MAX_EXT)); ax.setAttribute('y2', scY(0));
   ax.setAttribute('stroke', '#3a3f55'); ax.setAttribute('stroke-width', 1.5);
   scatter.appendChild(ax);
-
   const ay = document.createElementNS(svgNS, 'line');
   ay.setAttribute('x1', scX(0)); ay.setAttribute('y1', scY(0));
   ay.setAttribute('x2', scX(0)); ay.setAttribute('y2', scY(MAX_INT));
   ay.setAttribute('stroke', '#3a3f55'); ay.setAttribute('stroke-width', 1.5);
   scatter.appendChild(ay);
 
-  // --- x ticks ---
   const xticks = MAX_EXT > 8 ? [0, 5, 10, 15] : Array.from({length: MAX_EXT+1}, (_,k)=>k);
   xticks.forEach(k => {
     if (k > MAX_EXT) return;
@@ -687,7 +710,6 @@ function buildScatter() {
     t.style.fontSize = '10px'; t.textContent = k;
     scatter.appendChild(t);
   });
-  // --- y ticks ---
   for (let k = 0; k <= MAX_INT; k++) {
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('x', SC_PAD_L - 8); t.setAttribute('y', scY(k) + 4);
@@ -728,7 +750,6 @@ function buildScatter() {
   lt.textContent = 'CONCEPTS';
   scatter.appendChild(lt);
 
-  // --- group by (extent size, intent size) ---
   const groups = new Map();
   D.concepts.forEach((c, i) => {
     const key = `${c.extent.length}|${c.intent.length}`;
@@ -736,12 +757,11 @@ function buildScatter() {
     groups.get(key).push(i);
   });
 
-  // --- plot markers ---
   groups.forEach((ids, key) => {
     const [ex, it] = key.split('|').map(Number);
     const cx = scX(ex), cy = scY(it);
     const count = ids.length;
-    const baseR = (D.currentKey === 'freedom' ? 7 : 8) * Math.sqrt(count);
+    const baseR = 8 * Math.sqrt(count);
 
     const g = document.createElementNS(svgNS, 'g');
 
@@ -790,7 +810,6 @@ function buildScatter() {
     }
   });
 
-  // --- legend rows ---
   let ly = SC_PAD_T + 16;
   let lastKey = null;
   groups.forEach((ids, key) => {
@@ -846,7 +865,7 @@ function buildScatter() {
 }
 
 // =========================================================
-// 7. STATE & INTERACTION
+// 6. STATE & INTERACTION
 // =========================================================
 
 function getPinned() { return state.pinnedByDataset[state.currentKey]; }
@@ -910,7 +929,7 @@ function refreshPins() {
 }
 
 // =========================================================
-// 8. PANEL
+// 7. PANEL
 // =========================================================
 
 function chipList(arr, cls) {
@@ -1021,7 +1040,7 @@ function updatePanel(i) {
 }
 
 // =========================================================
-// 9. SCATTER UPDATE
+// 8. SCATTER UPDATE
 // =========================================================
 
 function updateScatter(i) {
@@ -1054,8 +1073,7 @@ function updateScatter(i) {
       dot.style.filter = 'drop-shadow(0 0 6px rgba(230,57,70,.7))';
     }
 
-    ring.style.display =
-      (p !== null && ids.includes(p)) ? 'block' : 'none';
+    ring.style.display = (p !== null && ids.includes(p)) ? 'block' : 'none';
   });
 
   state.scLegendRows.forEach(({ marker, label, conceptId }) => {
@@ -1089,7 +1107,7 @@ function updateScatter(i) {
 }
 
 // =========================================================
-// 10. TAB SWITCHING
+// 9. TAB SWITCHING
 // =========================================================
 
 function switchTo(key) {
@@ -1097,20 +1115,16 @@ function switchTo(key) {
   state.D = processDataset(DATASETS[key]);
   state.hoverId = null;
 
-  // Update header
   document.getElementById('page-title').textContent = state.D.title;
   document.getElementById('page-subtitle').textContent = state.D.subtitle;
 
-  // Update tab active states
   document.querySelectorAll('.tab').forEach(t => {
     t.classList.toggle('active', t.dataset.key === key);
   });
 
-  // Rebuild UI
   buildLattice();
   buildScatter();
 
-  // Restore pinned view for this dataset, or clear
   const p = getPinned();
   if (p !== null) applyState(p);
   else clearAll();
@@ -1120,7 +1134,11 @@ function switchTo(key) {
 function buildTabs() {
   const bar = document.getElementById('tabbar');
   bar.innerHTML = '';
-  const labels = { planets: 'Solar System', freedom: 'Freedom' };
+  const labels = {
+    planets: 'Solar System',
+    freedom: 'Freedom (4 axes)',
+    freedom2: 'Freedom (2 axes)'
+  };
   Object.keys(DATASETS).forEach(key => {
     const btn = document.createElement('button');
     btn.className = 'tab';
@@ -1135,7 +1153,7 @@ function buildTabs() {
 }
 
 // =========================================================
-// 11. BACKGROUND CLICK RELEASES PIN
+// 10. BACKGROUND CLICK RELEASES PIN
 // =========================================================
 
 document.addEventListener('click', () => {
@@ -1148,7 +1166,7 @@ document.addEventListener('click', () => {
 });
 
 // =========================================================
-// 12. INIT
+// 11. INIT
 // =========================================================
 
 buildTabs();
