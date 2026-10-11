@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Concept Lattice Viewer</title>
+<title>Architectonic Greimas Viewer</title>
 <style>
   :root {
     --bg: #0f1220; --panel: #1a1f35; --panel-2: #232a45;
@@ -11,6 +11,8 @@
     --node: #5b9bd5; --node-edge: #d0d8e8;
     --hover: #ffd23f; --anc: #ff8c42; --desc: #e63946;
     --edge: #4a5170; --accent: #5b9bd5;
+    --inner: #ffd23f; --m1: #5b9bd5; --m2: #3fa34d;
+    --mixed: #c9a227; --topbot: #666;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -23,16 +25,13 @@
   header p { margin: 0; color: var(--text-dim); font-size: 13px; }
 
   .json-card {
-    margin: 12px 34px 0;
-    background: var(--panel); border-radius: 12px;
-    border: 1px solid #2a2f45;
-    overflow: hidden;
+    margin: 12px 34px 0; background: var(--panel);
+    border-radius: 12px; border: 1px solid #2a2f45; overflow: hidden;
   }
   .json-card > summary {
-    padding: 10px 16px; cursor: pointer;
-    font-size: 12px; font-weight: 700; letter-spacing: .06em;
-    text-transform: uppercase; color: var(--text-dim);
-    user-select: none;
+    padding: 10px 16px; cursor: pointer; font-size: 12px;
+    font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--text-dim); user-select: none;
   }
   .json-card > summary:hover { color: var(--text); }
   .json-card[open] > summary { border-bottom: 1px solid #2a2f45; color: var(--text); }
@@ -41,18 +40,17 @@
     width: 100%; min-height: 120px; resize: vertical;
     background: #0a0d1a; color: var(--text);
     border: 1px solid #2f3550; border-radius: 8px;
-    padding: 10px 12px; font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    padding: 10px 12px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
     font-size: 11.5px; line-height: 1.4;
   }
-  .json-actions {
-    display: flex; gap: 10px; align-items: center; margin-top: 10px;
-  }
+  .json-actions { display: flex; gap: 10px; align-items: center; margin-top: 10px; }
   .json-btn {
     appearance: none; border: 1px solid var(--accent);
-    background: #22304d; color: #fff;
-    padding: 8px 18px; border-radius: 8px;
-    font: inherit; font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: background .18s, box-shadow .18s;
+    background: #22304d; color: #fff; padding: 8px 18px;
+    border-radius: 8px; font: inherit; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+    transition: background .18s, box-shadow .18s;
   }
   .json-btn:hover { background: #2c3f63; box-shadow: 0 0 10px rgba(91,155,213,.4); }
   .json-status { font-size: 12px; }
@@ -86,26 +84,26 @@
     display: flex; gap: 22px; padding: 14px 34px 40px;
     align-items: flex-start; flex-wrap: wrap;
   }
-  #lattice-wrap { flex: 1 1 640px; min-width: 380px; }
-  #panel { flex: 0 1 520px; min-width: 400px; }
+  #lattice-wrap { flex: 1 1 800px; min-width: 400px; }
+  #panel { flex: 0 1 480px; min-width: 360px; }
 
   #lattice {
     background: var(--panel); border-radius: 14px; width: 100%; height: auto;
     box-shadow: 0 6px 24px rgba(0,0,0,0.35); display: block;
   }
-  #greimas { background: transparent; width: 100%; height: auto; display: block; }
 
+  /* --- lattice node styles --- */
   .node { cursor: pointer; }
   .node circle {
-    fill: var(--node); stroke: var(--node-edge); stroke-width: 1.5;
+    fill: var(--node); stroke: var(--node-edge); stroke-width: 1.2;
     transition: fill .25s, stroke .25s, r .25s;
   }
   .node text {
-    fill: #c8cde0; font-size: 10.5px; font-weight: 600;
+    fill: #c8cde0; font-size: 9px; font-weight: 600;
     text-anchor: middle; pointer-events: none; user-select: none;
   }
   .edge {
-    stroke: var(--edge); stroke-width: 1.4;
+    stroke: var(--edge); stroke-width: 1;
     transition: stroke .25s, stroke-width .25s, stroke-opacity .25s;
   }
   .node.hovered circle {
@@ -113,16 +111,16 @@
     filter: drop-shadow(0 0 14px rgba(255,210,63,.85));
   }
   .node.ancestor circle {
-    fill: var(--anc); stroke: #ffcfae; stroke-width: 2;
+    fill: var(--anc); stroke: #ffcfae; stroke-width: 1.8;
     animation: pulseNodeOrange 1.9s ease-in-out infinite;
   }
   .node.descendant circle {
-    fill: var(--desc); stroke: #ffb0b8; stroke-width: 2;
+    fill: var(--desc); stroke: #ffb0b8; stroke-width: 1.8;
     animation: pulseNodeRed 1.9s ease-in-out infinite;
   }
-  .edge.ancestor { stroke: var(--anc); stroke-width: 3;
+  .edge.ancestor { stroke: var(--anc); stroke-width: 2.4;
     animation: pulseEdgeOrange 1.9s ease-in-out infinite; }
-  .edge.descendant { stroke: var(--desc); stroke-width: 3;
+  .edge.descendant { stroke: var(--desc); stroke-width: 2.4;
     animation: pulseEdgeRed 1.9s ease-in-out infinite; }
 
   .node.pinned .pin-ring { display: block; }
@@ -149,28 +147,15 @@
 
   .greimas-x {
     display: none; pointer-events: none;
-    stroke: #1a1a1a; stroke-width: 2.6; stroke-linecap: round;
+    stroke: #1a1a1a; stroke-width: 2.4; stroke-linecap: round;
   }
-  .node.hovered.no-greimas .greimas-x { display: block; }
+  .node.hovered.no-square .greimas-x { display: block; }
 
-  .greimas-node { cursor: default; }
-  .greimas-node .greimas-pin-ring {
-    fill: none; stroke: #fff; stroke-width: 2;
-    stroke-dasharray: 4 4; opacity: 0;
-    pointer-events: none; transition: opacity .25s;
-  }
-  .greimas-node.highlighted .greimas-pin-ring {
-    opacity: 0.95; animation: rotateDash 8s linear infinite;
-  }
-  .greimas-node.highlighted circle:not(.greimas-pin-ring) {
-    stroke: #fff; stroke-width: 3;
-    filter: drop-shadow(0 0 16px rgba(255,210,63,1));
-  }
-
+  /* --- panel cards --- */
   .card {
     background: var(--panel); border-radius: 14px; padding: 18px 20px 20px;
     margin-bottom: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-    max-height: 72vh; overflow-y: auto;
+    max-height: 78vh; overflow-y: auto;
   }
   .card h2 {
     font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -192,23 +177,12 @@
   }
   .section-title {
     font-size: 11px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: .08em; color: var(--text-dim); margin: 16px 0 6px;
-    border-top: 1px solid #2a2f45; padding-top: 12px;
+    letter-spacing: .08em; color: var(--text-dim);
+    margin: 16px 0 6px; border-top: 1px solid #2a2f45; padding-top: 12px;
   }
   .section-title.first { border-top: none; padding-top: 0; margin-top: 0; }
   .kv { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
   .kv .k { color: var(--text-dim); }
-  .bullet {
-    padding-left: 14px; position: relative; font-size: 12.5px;
-    line-height: 1.5; margin-bottom: 6px; color: #d4d8e8;
-  }
-  .bullet::before {
-    content: '•'; position: absolute; left: 2px; color: var(--text-dim);
-  }
-  .relation-key { color: var(--anc); font-weight: 600; }
-  .relation-key.contr { color: #ff8c42; }
-  .relation-key.contra { color: #e63946; }
-  .relation-key.impl { color: #5b9bd5; }
   .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
   .chip {
     display: inline-block; padding: 2px 9px; border-radius: 10px;
@@ -222,6 +196,51 @@
   .chip.self { background: #4a3a1a; border-color: #8c6a2a; color: #fff0b3; font-weight: 600; }
   .hint { color: var(--text-dim); font-size: 13px; font-style: italic; }
 
+  /* --- greimas square cards --- */
+  #squares-section {
+    padding: 0 34px 40px;
+  }
+  #squares-section h2 {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--text-dim);
+    margin: 0 0 12px;
+  }
+  #squares-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .square-card {
+    background: var(--panel);
+    border-radius: 14px;
+    padding: 14px 14px 10px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+    border: 2px solid transparent;
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .square-card.active {
+    border-color: var(--hover);
+    box-shadow: 0 0 20px rgba(255,210,63,0.35), 0 6px 24px rgba(0,0,0,0.35);
+  }
+  .square-card h3 {
+    font-size: 12px; font-weight: 700; margin: 0 0 8px;
+    color: var(--text); letter-spacing: -0.01em;
+  }
+  .square-card h3 .sq-key {
+    display: inline-block; padding: 1px 7px; border-radius: 6px;
+    background: #22304d; color: #cce0ff; font-size: 10px;
+    letter-spacing: .06em; margin-right: 6px;
+  }
+  .square-card h3 .sq-parent {
+    color: var(--text-dim); font-weight: 400; font-style: italic;
+  }
+  .square-svg { display: block; width: 100%; height: auto; }
+  .sq-node { transition: fill .2s, stroke .2s, r .2s; }
+  .sq-node.hl circle { stroke: #fff3c4; stroke-width: 3;
+    filter: drop-shadow(0 0 10px rgba(255,210,63,1)); }
+  .sq-node.dim { opacity: 0.25; }
+
+  /* --- scatter --- */
   #scatter {
     background: var(--panel); border-radius: 14px; width: 100%;
     display: block; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
@@ -229,23 +248,19 @@
   .scatter-hint { color: var(--text-dim); font-size: 11.5px; margin-top: 8px; text-align: center; }
   .arrow-anc { color: var(--anc); font-weight: 700; }
   .arrow-desc { color: var(--desc); font-weight: 700; }
-  .greimas-hint {
-    color: var(--text-dim); font-size: 11.5px; margin-top: 10px;
-    text-align: center; line-height: 1.45;
-  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1 id="page-title">Concept Lattice Viewer</h1>
-  <p id="page-subtitle">Hover a node to preview its joins and meets. Click to pin. Click again to release.</p>
+  <h1 id="page-title">Architectonic Greimas Viewer</h1>
+  <p id="page-subtitle">Hover a node to preview; click to pin. Corresponding positions on the Greimas squares highlight below.</p>
 </header>
 
 <details class="json-card" id="json-card">
-  <summary>Load custom JSON</summary>
+  <summary>Load architectonic JSON</summary>
   <div class="json-body">
-    <textarea id="json-input" placeholder="Paste the JSON output from the Python script here."></textarea>
+    <textarea id="json-input" placeholder="Paste the JSON output from greimas_architectonic.py (v2)."></textarea>
     <div class="json-actions">
       <button class="json-btn" id="json-update-btn">Update</button>
       <span class="json-status" id="json-status"></span>
@@ -265,113 +280,66 @@
 <div class="container">
   <div id="lattice-wrap">
     <svg id="lattice"></svg>
-    <div class="card" id="greimas-card" style="display:none; margin-top:16px;">
-      <h2>Greimas Square</h2>
-      <svg id="greimas"></svg>
-      <div class="greimas-hint" id="greimas-hint">
-        Click a lattice node to highlight its counterpart.
-      </div>
-    </div>
   </div>
   <div id="panel">
     <div class="card" id="info-card">
       <h2>Node</h2>
-      <div class="hint">Hover a node in the lattice to preview. Click to pin.</div>
+      <div class="hint">Hover a node in the architectonic lattice. Click to pin.</div>
     </div>
     <div class="card">
       <h2>Extent × Intent</h2>
       <svg id="scatter"></svg>
-      <div class="scatter-hint">Dot size reflects how many concepts share the same position.</div>
+      <div class="scatter-hint">x = |extent|, y = |intent|</div>
     </div>
   </div>
 </div>
 
+<div id="squares-section" style="display:none;">
+  <h2>Greimas Squares</h2>
+  <div id="squares-grid"></div>
+</div>
+
 <script>
 // =========================================================
-// DATASETS
+// GLOBAL STATE
 // =========================================================
-
-const DATASETS = {
-
-  planets: {
-    title: 'Concept Lattice — Solar System',
-    subtitle: 'Hover a node to preview its joins and meets. Click to pin. Click again to release.',
-    viewBox: { w: 800, h: 660 },
-    padX: 100, padY: 90, nodeR: 26, labelLines: false,
-    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42, maxExt: 6, maxInt: 6 },
-    concepts: [
-      { id: 0, label: '⊥', short: 'Bottom', name: 'Bottom — empty extent, all attributes',
-        extent: [], intent: ['Is a planet','Is small','Is large','Has no moons','Has moons','Is far from sun'],
-        x: 0.50, y: 0.04 },
-      { id: 1, label: 'Small · no moons', short: 'Sm·NM', name: 'Small planets without moons',
-        extent: ['Mercury','Venus'], intent: ['Is a planet','Is small','Has no moons'],
-        x: 0.14, y: 0.30 },
-      { id: 2, label: 'Small · has moons', short: 'Sm·HM', name: 'Small planets with moons',
-        extent: ['Earth','Mars'], intent: ['Is a planet','Is small','Has moons'],
-        x: 0.50, y: 0.30 },
-      { id: 3, label: 'Large · moons · far', short: 'Lg·HM·FS', name: 'Large planets with moons, far from sun',
-        extent: ['Jupiter','Saturn'], intent: ['Is a planet','Is large','Has moons','Is far from sun'],
-        x: 0.86, y: 0.30 },
-      { id: 4, label: 'Small', short: 'Small', name: 'All small planets',
-        extent: ['Mercury','Venus','Earth','Mars'], intent: ['Is a planet','Is small'],
-        x: 0.28, y: 0.56 },
-      { id: 5, label: 'Has moons', short: 'Moons', name: 'All planets with moons',
-        extent: ['Earth','Mars','Jupiter','Saturn'], intent: ['Is a planet','Has moons'],
-        x: 0.72, y: 0.56 },
-      { id: 6, label: '⊤', short: 'Top', name: 'Top — all planets, shared attribute only',
-        extent: ['Mercury','Venus','Earth','Mars','Jupiter','Saturn'], intent: ['Is a planet'],
-        x: 0.50, y: 0.82 }
-    ],
-    edges: [[0,1],[0,2],[0,3],[1,4],[2,4],[2,5],[3,5],[4,6],[5,6]]
-  },
-
-  freedom2: {
-    title: 'Concept Lattice — Freedom (Two Axes)',
-    subtitle: 'Two binary oppositions: non-interference and available options.',
-    viewBox: { w: 800, h: 600 },
-    padX: 100, padY: 100, nodeR: 26, labelLines: false,
-    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42, maxExt: 4, maxInt: 2 },
-    concepts: [
-      { id: 0, label: '⊥', short: 'Bottom', name: 'Bottom — no scenario, both attributes',
-        extent: [], intent: ['Non-interference','Available options'], x: 0.50, y: 0.06 },
-      { id: 1, label: 'Non-interference', short: 'NI',
-        name: 'Non-interference — left alone, but no alternatives',
-        extent: ['No alternatives','Free citizen'], intent: ['Non-interference'], x: 0.20, y: 0.50 },
-      { id: 2, label: 'Available options', short: 'AO',
-        name: 'Available options — under coercion, but with choices',
-        extent: ['Coerced chooser','Free citizen'], intent: ['Available options'], x: 0.80, y: 0.50 },
-      { id: 3, label: '⊤', short: 'Top', name: 'Top — all scenarios, no shared attribute',
-        extent: ['No alternatives','Coerced chooser','Free citizen','Trapped'], intent: [], x: 0.50, y: 0.94 }
-    ],
-    edges: [[0, 1], [0, 2], [1, 3], [2, 3]]
-  }
-
-};
-
-// =========================================================
-// STATE
-// =========================================================
-
-const state = {
-  currentKey: 'planets',
-  pinnedByDataset: { planets: null, freedom2: null },
-  hoverId: null,
-  D: null,
-  nodeEls: [], edgeEls: [], scDotEls: [], scLegendRows: [],
-  greimasNodeEls: [], greimasNodeElsByKey: {}
-};
 
 const svgNS = 'http://www.w3.org/2000/svg';
 
+const state = {
+  currentKey: null,
+  datasets: {},           // key -> dataset object
+  pinnedByDataset: {},    // key -> pinned concept id (in current lattice)
+  hoverId: null,
+  D: null,                // current processed dataset
+  nodeEls: [],
+  edgeEls: [],
+  scDotEls: [],
+  squares: [],            // [{key, title, squareData, svgEl, cardEl}]
+  squareNodeEls: {},      // {squareKey: {position: nodeEl}}
+};
+
 // =========================================================
-// PROCESSING
+// PROCESSING — compute ancestors, descendants, joins, meets
 // =========================================================
 
 function processDataset(raw) {
-  const N = raw.concepts.length;
-  const parents = Array.from({length:N}, () => []);
-  const children = Array.from({length:N}, () => []);
-  raw.edges.forEach(([a,b]) => { parents[a].push(b); children[b].push(a); });
+  const concepts = raw.concepts;
+  const edges = raw.edges;
+  const N = concepts.length;
+
+  const idToIdx = {};
+  concepts.forEach((c, i) => idToIdx[c.id] = i);
+
+  const children = Array.from({length: N}, () => []);  // index -> lower nodes
+  const parents  = Array.from({length: N}, () => []);  // index -> upper nodes
+
+  edges.forEach(([upper, lower]) => {
+    const u = idToIdx[upper], l = idToIdx[lower];
+    if (u === undefined || l === undefined) return;
+    children[u].push(l);
+    parents[l].push(u);
+  });
 
   function ancestorsOf(i) {
     const seen = new Set(); const stack = [...parents[i]];
@@ -392,8 +360,8 @@ function processDataset(raw) {
     return seen;
   }
 
-  const ANCS = raw.concepts.map((_, i) => ancestorsOf(i));
-  const DESC = raw.concepts.map((_, i) => descendantsOf(i));
+  const ANCS = concepts.map((_, i) => ancestorsOf(i));
+  const DESC = concepts.map((_, i) => descendantsOf(i));
 
   function join(a, b) {
     if (a === b) return a;
@@ -428,7 +396,92 @@ function processDataset(raw) {
     return inter[0];
   }
 
-  return Object.assign({}, raw, { N, parents, children, ANCS, DESC, join, meet });
+  return Object.assign({}, raw, {
+    N, concepts, edges, idToIdx,
+    parents, children, ANCS, DESC, join, meet
+  });
+}
+
+// =========================================================
+// LAYOUT — layered poset layout (Sugiyama style)
+// =========================================================
+
+function layeredLayout(concepts, edges) {
+  const N = concepts.length;
+  const ids = concepts.map(c => c.id);
+  const idToIdx = {};
+  ids.forEach((id, i) => idToIdx[id] = i);
+
+  const children = Array.from({length: N}, () => []);
+  const parents  = Array.from({length: N}, () => []);
+  edges.forEach(([upper, lower]) => {
+    const u = idToIdx[upper], l = idToIdx[lower];
+    if (u === undefined || l === undefined) return;
+    children[u].push(l);
+    parents[l].push(u);
+  });
+
+  // rank from bottom
+  const rank = Array(N).fill(0);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (let i = 0; i < N; i++) {
+      for (const c of children[i]) {
+        const nr = rank[c] + 1;
+        if (nr > rank[i]) { rank[i] = nr; changed = true; }
+      }
+    }
+  }
+
+  const maxRank = Math.max(...rank, 0);
+  const byRank = {};
+  for (let i = 0; i < N; i++) {
+    const r = rank[i];
+    if (!byRank[r]) byRank[r] = [];
+    byRank[r].push(i);
+  }
+
+  const x = new Array(N).fill(0.5);
+  for (const r in byRank) {
+    const list = byRank[r];
+    list.sort((a, b) => {
+      const ca = concepts[a], cb = concepts[b];
+      return String(ca.short || ca.label).localeCompare(String(cb.short || cb.label));
+    });
+    list.forEach((i, k) => { x[i] = (k + 1) / (list.length + 1); });
+  }
+
+  for (let iter = 0; iter < 60; iter++) {
+    for (let r = maxRank; r >= 0; r--) {
+      const list = byRank[r] || [];
+      list.forEach(i => {
+        if (parents[i].length) {
+          const avg = parents[i].reduce((a, p) => a + x[p], 0) / parents[i].length;
+          x[i] = 0.5 * x[i] + 0.5 * avg;
+        }
+      });
+      const sorted = [...list].sort((a, b) => x[a] - x[b]);
+      sorted.forEach((i, k) => { x[i] = (k + 1) / (sorted.length + 1); });
+    }
+    for (let r = 0; r <= maxRank; r++) {
+      const list = byRank[r] || [];
+      list.forEach(i => {
+        if (children[i].length) {
+          const avg = children[i].reduce((a, c) => a + x[c], 0) / children[i].length;
+          x[i] = 0.5 * x[i] + 0.5 * avg;
+        }
+      });
+      const sorted = [...list].sort((a, b) => x[a] - x[b]);
+      sorted.forEach((i, k) => { x[i] = (k + 1) / (sorted.length + 1); });
+    }
+  }
+
+  const positions = {};
+  for (let i = 0; i < N; i++) {
+    positions[ids[i]] = { x: x[i], y: rank[i] / Math.max(maxRank, 1), rank: rank[i] };
+  }
+  return positions;
 }
 
 // =========================================================
@@ -439,402 +492,461 @@ function buildLattice() {
   const D = state.D;
   const svg = document.getElementById('lattice');
   svg.innerHTML = '';
-  svg.setAttribute('viewBox', `0 0 ${D.viewBox.w} ${D.viewBox.h}`);
-
-  const W = D.viewBox.w, H = D.viewBox.h;
-  const PAD_X = D.padX, PAD_Y = D.padY;
-  const NODE_R = D.nodeR;
-
-  const px = D.concepts.map(c => ({
-    x: PAD_X + c.x * (W - 2*PAD_X),
-    y: H - PAD_Y - c.y * (H - 2*PAD_Y)
-  }));
-
   state.nodeEls = [];
   state.edgeEls = [];
 
-  D.edges.forEach(([a,b]) => {
-    const line = document.createElementNS(svgNS, 'line');
-    line.setAttribute('x1', px[a].x); line.setAttribute('y1', px[a].y);
-    line.setAttribute('x2', px[b].x); line.setAttribute('y2', px[b].y);
-    line.setAttribute('class', 'edge');
-    line.dataset.a = a; line.dataset.b = b;
-    svg.appendChild(line); state.edgeEls.push(line);
+  if (!D || !D.concepts) return;
+
+  const N = D.concepts.length;
+  const positions = layeredLayout(D.concepts, D.edges);
+
+  const VW = 1400;
+  const VH = Math.max(500, 120 * (Math.max(...Object.values(positions).map(p => p.rank)) + 1));
+
+  svg.setAttribute('viewBox', `0 0 ${VW} ${VH}`);
+
+  const PAD_X = 60, PAD_Y = 40;
+  const px = {};
+  D.concepts.forEach(c => {
+    const p = positions[c.id];
+    px[c.id] = {
+      x: PAD_X + p.x * (VW - 2*PAD_X),
+      y: VH - PAD_Y - p.y * (VH - 2*PAD_Y),
+    };
   });
+
+  // edges
+  D.edges.forEach(([a, b]) => {
+    if (!px[a] || !px[b]) return;
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', px[a].x);
+    line.setAttribute('y1', px[a].y);
+    line.setAttribute('x2', px[b].x);
+    line.setAttribute('y2', px[b].y);
+    line.setAttribute('class', 'edge');
+    line.dataset.a = a;
+    line.dataset.b = b;
+    svg.appendChild(line);
+    state.edgeEls.push(line);
+  });
+
+  const radius = 12;
 
   D.concepts.forEach((c, i) => {
     const g = document.createElementNS(svgNS, 'g');
     g.setAttribute('class', 'node');
-    g.dataset.id = i;
+    g.dataset.id = c.id;
 
-    const hasGreimas = !!D.greimas;
-    const hasMapping = hasGreimas && D.greimas.mapping[i] !== undefined;
-    if (hasGreimas && !hasMapping) g.classList.add('no-greimas');
+    const hasSquare = hasGreimasPlacement(c);
+
+    if (!hasSquare) g.classList.add('no-square');
 
     const pinRing = document.createElementNS(svgNS, 'circle');
-    pinRing.setAttribute('cx', px[i].x);
-    pinRing.setAttribute('cy', px[i].y);
-    pinRing.setAttribute('r', NODE_R + 8);
+    pinRing.setAttribute('cx', px[c.id].x);
+    pinRing.setAttribute('cy', px[c.id].y);
+    pinRing.setAttribute('r', radius + 6);
     pinRing.setAttribute('class', 'pin-ring');
     g.appendChild(pinRing);
 
     const circle = document.createElementNS(svgNS, 'circle');
-    circle.setAttribute('cx', px[i].x);
-    circle.setAttribute('cy', px[i].y);
-    circle.setAttribute('r', NODE_R);
+    circle.setAttribute('cx', px[c.id].x);
+    circle.setAttribute('cy', px[c.id].y);
+    circle.setAttribute('r', radius);
+    // color by role/origin
+    circle.setAttribute('fill', nodeFillForConcept(c));
+    circle.setAttribute('stroke', '#1a1a1a');
+    circle.setAttribute('stroke-width', 1.2);
     g.appendChild(circle);
 
-    if (hasGreimas && !hasMapping) {
-      const xs = NODE_R * 0.46;
+    if (!hasSquare) {
+      const xs = radius * 0.5;
       const x1 = document.createElementNS(svgNS, 'line');
-      x1.setAttribute('x1', px[i].x - xs); x1.setAttribute('y1', px[i].y - xs);
-      x1.setAttribute('x2', px[i].x + xs); x1.setAttribute('y2', px[i].y + xs);
+      x1.setAttribute('x1', px[c.id].x - xs);
+      x1.setAttribute('y1', px[c.id].y - xs);
+      x1.setAttribute('x2', px[c.id].x + xs);
+      x1.setAttribute('y2', px[c.id].y + xs);
       x1.setAttribute('class', 'greimas-x');
       g.appendChild(x1);
       const x2 = document.createElementNS(svgNS, 'line');
-      x2.setAttribute('x1', px[i].x + xs); x2.setAttribute('y1', px[i].y - xs);
-      x2.setAttribute('x2', px[i].x - xs); x2.setAttribute('y2', px[i].y + xs);
+      x2.setAttribute('x1', px[c.id].x + xs);
+      x2.setAttribute('y1', px[c.id].y - xs);
+      x2.setAttribute('x2', px[c.id].x - xs);
+      x2.setAttribute('y2', px[c.id].y + xs);
       x2.setAttribute('class', 'greimas-x');
       g.appendChild(x2);
     }
 
-    const lines = D.labelLines ? c.label.split(' · ') : [c.label];
-    lines.forEach((ln, k) => {
-      const t = document.createElementNS(svgNS, 'text');
-      t.setAttribute('x', px[i].x);
-      t.setAttribute('y', px[i].y + NODE_R + (D.labelLines ? 14 : 18) + k * 12);
-      t.setAttribute('text-anchor', 'middle');
-      t.textContent = ln;
-      g.appendChild(t);
-    });
+    // label
+    const label = document.createElementNS(svgNS, 'text');
+    label.setAttribute('x', px[c.id].x);
+    label.setAttribute('y', px[c.id].y + radius + 12);
+    label.setAttribute('text-anchor', 'middle');
+    let text = c.short || c.label || '';
+    if (text.length > 18) text = text.slice(0, 17) + '…';
+    label.textContent = text;
+    g.appendChild(label);
 
     svg.appendChild(g);
     state.nodeEls.push(g);
 
-    g.addEventListener('mouseenter', () => onEnter(i));
-    g.addEventListener('mouseleave', () => onLeave(i));
-    g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(i); });
+    g.addEventListener('mouseenter', () => onEnter(c.id));
+    g.addEventListener('mouseleave', () => onLeave());
+    g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(c.id); });
   });
 }
 
+function nodeFillForConcept(c) {
+  if (c.role === 'shared_bottom' || c.role === 'architectonic_top') return '#666';
+  if (c.role === 'interface') return '#3fa34d';
+  if (c.role === 'layer_1_internal') {
+    const s = c.short || '';
+    if (s.startsWith('M2:')) return '#3fa34d';
+    if (s.startsWith('M1:')) return '#5b9bd5';
+    if (s.startsWith('Mix:')) return '#c9a227';
+    return '#5b9bd5';
+  }
+  if (c.role === 'layer_2_internal') {
+    const s = c.short || '';
+    if (s === 'S1' || s === 'S2' || s === '~S1' || s === '~S2') return '#ffd23f';
+    if (s.startsWith('M2:')) return '#3fa34d';
+    if (s.startsWith('M1:')) return '#5b9bd5';
+    if (s.startsWith('Mix:')) return '#c9a227';
+    return '#5b9bd5';
+  }
+  return '#5b9bd5';
+}
+
 // =========================================================
-// GREIMAS BUILD
+// GREIMAS SQUARE MAPPING
 // =========================================================
 
-function buildGreimas() {
-  const D = state.D;
-  const card = document.getElementById('greimas-card');
-  const svg = document.getElementById('greimas');
-  const hint = document.getElementById('greimas-hint');
-  svg.innerHTML = '';
-  state.greimasNodeEls = [];
-  state.greimasNodeElsByKey = {};
+const SQUARE_KEYS = ['S1','S2','~S1','~S2',
+                     'M11','M12','M13','M14',
+                     'M21','M22','M23','M24',
+                     'Mixed1','Mixed2'];
 
-  if (!D.greimas) { card.style.display = 'none'; return; }
-  card.style.display = 'block';
+function findPositionInSquare(concept, square) {
+  const short = concept.short || '';
 
-  const G = D.greimas;
-  svg.setAttribute('viewBox', `0 0 ${G.viewBox.w} ${G.viewBox.h}`);
+  if (['S1','S2','~S1','~S2'].includes(short)) return short;
+  if (short === 'Top' || short === '⊤' || short === 'top') return 'top';
+  if (short === 'Bottom' || short === '⊥' || short === 'bottom') return 'bottom';
 
-  G.edges.forEach(([a, b, kind]) => {
-    const na = G.nodes[a], nb = G.nodes[b];
-    if (!na || !nb) return;
-    const line = document.createElementNS(svgNS, 'line');
-    line.setAttribute('x1', na.x); line.setAttribute('y1', na.y);
-    line.setAttribute('x2', nb.x); line.setAttribute('y2', nb.y);
-    if (kind === 'inner') {
-      line.setAttribute('stroke', '#c9a227');
-      line.setAttribute('stroke-width', '1.8');
-      line.setAttribute('stroke-dasharray', '5 3');
-      line.setAttribute('stroke-opacity', '0.85');
-    } else if (kind === 'inner-m1') {
-      line.setAttribute('stroke', '#5b9bd5');
-      line.setAttribute('stroke-width', '1.1');
-      line.setAttribute('stroke-dasharray', '2 3');
-      line.setAttribute('stroke-opacity', '0.65');
-    } else {
-      line.setAttribute('stroke', '#3fa34d');
-      line.setAttribute('stroke-width', '1.1');
-      line.setAttribute('stroke-opacity', '0.55');
+  if (short.startsWith('M1:')) {
+    const term = short.slice(3);
+    for (const k of ['M11','M12','M13','M14']) {
+      if (square[k] === term) return k;
     }
-    svg.appendChild(line);
+  }
+  if (short.startsWith('M2:')) {
+    const term = short.slice(3);
+    for (const k of ['M21','M22','M23','M24']) {
+      if (square[k] === term) return k;
+    }
+  }
+  if (short.startsWith('Mix:')) {
+    const term = short.slice(4);
+    for (const k of ['Mixed1','Mixed2']) {
+      if (square[k] === term) return k;
+    }
+  }
+  return null;
+}
+
+function hasGreimasPlacement(concept) {
+  if (concept.role === 'shared_bottom') return true;
+  if (concept.role === 'architectonic_top') return true;
+  if (concept.role === 'interface') return true;
+  if (concept.role === 'layer_1_internal') {
+    const pos = findPositionInSquare(concept, state.D.layer1Square);
+    return pos !== null;
+  }
+  if (concept.role === 'layer_2_internal') {
+    const sq = state.D.squaresByKey[concept.origin];
+    if (!sq) return false;
+    const pos = findPositionInSquare(concept, sq.squareData);
+    return pos !== null;
+  }
+  return false;
+}
+
+function getSquarePlacements(concept) {
+  // Returns array of {squareKey, position}
+  const out = [];
+  if (concept.role === 'shared_bottom') {
+    // Shared across all squares
+    state.D.squares.forEach(sq => {
+      out.push({ squareKey: sq.key, position: 'bottom' });
+    });
+    return out;
+  }
+  if (concept.role === 'architectonic_top') {
+    out.push({ squareKey: 'A', position: 'top' });
+    return out;
+  }
+  if (concept.role === 'interface') {
+    out.push({ squareKey: concept.origin, position: 'top' });
+    return out;
+  }
+  if (concept.role === 'layer_1_internal') {
+    const pos = findPositionInSquare(concept, state.D.layer1Square);
+    if (pos) out.push({ squareKey: 'A', position: pos });
+    return out;
+  }
+  if (concept.role === 'layer_2_internal') {
+    const sq = state.D.squaresByKey[concept.origin];
+    if (!sq) return out;
+    const pos = findPositionInSquare(concept, sq.squareData);
+    if (pos) out.push({ squareKey: concept.origin, position: pos });
+    return out;
+  }
+  return out;
+}
+
+// =========================================================
+// GREIMAS SQUARE RENDERING
+// =========================================================
+
+const SQ_POS = {
+  top:      [200, 24],
+  M21:      [50, 92],
+  M22:      [150, 92],
+  M23:      [250, 92],
+  M24:      [350, 92],
+  M11:      [200, 158],
+  S1:       [110, 240],
+  S2:       [290, 240],
+  M13:      [40, 320],
+  Mixed1:   [130, 320],
+  Mixed2:   [270, 320],
+  M14:      [360, 320],
+  '~S2':    [110, 400],
+  '~S1':    [290, 400],
+  M12:      [200, 478],
+  bottom:   [200, 548],
+};
+
+const SQ_EDGES = [
+  ['top','M21'],['top','M22'],['top','M23'],['top','M24'],
+  ['M21','M11'],['M21','M13'],
+  ['M22','M11'],['M22','M14'],
+  ['M23','M12'],['M23','M13'],
+  ['M24','M12'],['M24','M14'],
+  ['M11','S1'],['M11','S2'],
+  ['M12','~S2'],['M12','~S1'],
+  ['M13','S1'],['M13','~S2'],
+  ['M14','S2'],['M14','~S1'],
+  ['Mixed1','S1'],['Mixed1','~S1'],
+  ['Mixed2','S2'],['Mixed2','~S2'],
+  ['S1','bottom'],['S2','bottom'],['~S1','bottom'],['~S2','bottom'],
+  // inner square relations (dashed)
+  ['S1','S2'],['~S2','~S1'],['S1','~S2'],['S2','~S1'],
+  ['S1','~S1'],['S2','~S2'],
+];
+
+function renderGreimasSquare(squareData, title, squareKey) {
+  const svgEl = document.createElementNS(svgNS, 'svg');
+  svgEl.setAttribute('class', 'square-svg');
+  svgEl.setAttribute('viewBox', '0 0 400 580');
+
+  // edges
+  SQ_EDGES.forEach(([a, b]) => {
+    if (!SQ_POS[a] || !SQ_POS[b]) return;
+    const [x1, y1] = SQ_POS[a];
+    const [x2, y2] = SQ_POS[b];
+
+    // Determine edge style by relation type
+    let stroke = '#333a55';
+    let dash = null;
+    let width = 1.2;
+    const innerSq = new Set(['S1','S2','~S2','~S1']);
+    if (innerSq.has(a) && innerSq.has(b)) {
+      stroke = '#c9a227';
+      dash = '4 2';
+      width = 1.3;
+    } else if (a.startsWith('M1') || b.startsWith('M1')) {
+      stroke = '#4a7bb5';
+      width = 1.2;
+    } else if (a.startsWith('M2') || b.startsWith('M2')) {
+      stroke = '#3a8544';
+      width = 1.1;
+    } else if (a.startsWith('Mixed') || b.startsWith('Mixed')) {
+      stroke = '#8a7033';
+      width = 1.1;
+    } else if (a === 'top' || b === 'top' || a === 'bottom' || b === 'bottom') {
+      stroke = '#444';
+      width = 1.0;
+    }
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', stroke);
+    line.setAttribute('stroke-width', width);
+    line.setAttribute('opacity', '0.8');
+    if (dash) line.setAttribute('stroke-dasharray', dash);
+    svgEl.appendChild(line);
   });
 
-  Object.entries(G.nodes).forEach(([key, node]) => {
+  // nodes
+  const nodeEls = {};
+  const r = 15;
+  Object.entries(SQ_POS).forEach(([pos, [cx, cy]]) => {
     const g = document.createElementNS(svgNS, 'g');
-    g.setAttribute('class', 'greimas-node');
-    g.setAttribute('data-key', key);
-
-    let radius = 16, fill = '#ffd23f';
-    if (node.tier === 'm1') { fill = '#5b9bd5'; radius = 14; }
-    else if (node.tier === 'm2') { fill = '#3fa34d'; radius = 12; }
-
-    const pinRing = document.createElementNS(svgNS, 'circle');
-    pinRing.setAttribute('cx', node.x);
-    pinRing.setAttribute('cy', node.y);
-    pinRing.setAttribute('r', radius + 8);
-    pinRing.setAttribute('class', 'greimas-pin-ring');
-    g.appendChild(pinRing);
+    g.setAttribute('class', 'sq-node');
+    g.dataset.position = pos;
 
     const circle = document.createElementNS(svgNS, 'circle');
-    circle.setAttribute('cx', node.x);
-    circle.setAttribute('cy', node.y);
-    circle.setAttribute('r', radius);
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+
+    let fill = '#5b9bd5';
+    if (['S1','S2','~S1','~S2'].includes(pos)) fill = '#ffd23f';
+    else if (pos.startsWith('M2')) fill = '#3fa34d';
+    else if (pos.startsWith('M1')) fill = '#5b9bd5';
+    else if (pos.startsWith('Mixed')) fill = '#c9a227';
+    else if (pos === 'top' || pos === 'bottom') fill = '#555';
+
     circle.setAttribute('fill', fill);
     circle.setAttribute('stroke', '#1a1a1a');
-    circle.setAttribute('stroke-width', '1.5');
+    circle.setAttribute('stroke-width', 1.4);
     g.appendChild(circle);
 
-    const t = document.createElementNS(svgNS, 'text');
-    t.setAttribute('fill', '#c8cde0');
-    t.style.fontSize = '11px';
-    t.style.fontWeight = '600';
-    t.style.userSelect = 'none';
-    t.style.pointerEvents = 'none';
-    t.textContent = node.label;
-    const gap = 6;
-    if (node.labelPos === 'below') {
-      t.setAttribute('x', node.x);
-      t.setAttribute('y', node.y + radius + 14);
-      t.setAttribute('text-anchor', 'middle');
-    } else if (node.labelPos === 'above') {
-      t.setAttribute('x', node.x);
-      t.setAttribute('y', node.y - radius - gap);
-      t.setAttribute('text-anchor', 'middle');
-    } else if (node.labelPos === 'left') {
-      t.setAttribute('x', node.x - radius - gap);
-      t.setAttribute('y', node.y + 4);
-      t.setAttribute('text-anchor', 'end');
-    } else {
-      t.setAttribute('x', node.x + radius + gap);
-      t.setAttribute('y', node.y + 4);
-      t.setAttribute('text-anchor', 'start');
-    }
-    g.appendChild(t);
+    // term label inside circle
+    const termText = squareData[pos] || (pos === 'top' ? '⊤' : pos === 'bottom' ? '⊥' : '');
+    const inner = document.createElementNS(svgNS, 'text');
+    inner.setAttribute('x', cx);
+    inner.setAttribute('y', cy + 3);
+    inner.setAttribute('text-anchor', 'middle');
+    inner.setAttribute('font-size', '8');
+    inner.setAttribute('fill', '#1a1a1a');
+    inner.setAttribute('font-weight', '700');
+    inner.setAttribute('pointer-events', 'none');
+    let inText = termText;
+    if (inText.length > 8) inText = inText.slice(0, 7) + '…';
+    inner.textContent = inText;
+    g.appendChild(inner);
 
-    svg.appendChild(g);
-    state.greimasNodeEls.push(g);
-    state.greimasNodeElsByKey[key] = g;
+    // positional label below
+    const posLabel = document.createElementNS(svgNS, 'text');
+    posLabel.setAttribute('x', cx);
+    posLabel.setAttribute('y', cy + r + 10);
+    posLabel.setAttribute('text-anchor', 'middle');
+    posLabel.setAttribute('font-size', '7.5');
+    posLabel.setAttribute('fill', '#8a90a8');
+    posLabel.setAttribute('pointer-events', 'none');
+    posLabel.textContent = pos;
+    g.appendChild(posLabel);
+
+    svgEl.appendChild(g);
+    nodeEls[pos] = g;
   });
 
-  hint.textContent = 'Click a lattice node to highlight its counterpart. Nodes marked with an X in the lattice have no counterpart here.';
-  updateGreimas();
-}
-
-function updateGreimas() {
-  if (!state.D.greimas) return;
-  const p = getPinned();
-  const key = (p !== null) ? state.D.greimas.mapping[p] : null;
-  state.greimasNodeEls.forEach(el => el.classList.remove('highlighted'));
-  if (key && state.greimasNodeElsByKey[key]) {
-    state.greimasNodeElsByKey[key].classList.add('highlighted');
-  }
+  state.squareNodeEls[squareKey] = nodeEls;
+  return svgEl;
 }
 
 // =========================================================
-// SCATTER BUILD
+// BUILD ALL GREIMAS SQUARES
 // =========================================================
 
-function buildScatter() {
+function buildGreimasSquares() {
   const D = state.D;
-  const scatter = document.getElementById('scatter');
-  scatter.innerHTML = '';
-  scatter.setAttribute('viewBox', `0 0 ${D.scatter.w} ${D.scatter.h}`);
+  const section = document.getElementById('squares-section');
+  const grid = document.getElementById('squares-grid');
+  grid.innerHTML = '';
+  state.squares = [];
+  state.squareNodeEls = {};
 
-  state.scDotEls = [];
-  state.scLegendRows = [];
-
-  const SC_W = D.scatter.w, SC_H = D.scatter.h;
-  const SC_PAD_L = D.scatter.padL, SC_PAD_R = D.scatter.padR;
-  const SC_PAD_T = D.scatter.padT, SC_PAD_B = D.scatter.padB;
-  const SC_INNER_W = SC_W - SC_PAD_L - SC_PAD_R;
-  const SC_INNER_H = SC_H - SC_PAD_T - SC_PAD_B;
-  const MAX_EXT = D.scatter.maxExt, MAX_INT = D.scatter.maxInt;
-  const LEGEND_X = SC_PAD_L + SC_INNER_W + 12;
-  const LEGEND_ROW_H = 18;
-
-  const scX = v => SC_PAD_L + (v / MAX_EXT) * SC_INNER_W;
-  const scY = v => SC_H - SC_PAD_B - (v / MAX_INT) * SC_INNER_H;
-
-  for (let k = 0; k <= MAX_INT; k++) {
-    const l = document.createElementNS(svgNS, 'line');
-    l.setAttribute('x1', scX(0)); l.setAttribute('y1', scY(k));
-    l.setAttribute('x2', scX(MAX_EXT)); l.setAttribute('y2', scY(k));
-    l.setAttribute('stroke', '#222a45'); l.setAttribute('stroke-width', 1);
-    scatter.appendChild(l);
+  if (!D || !D.squares) {
+    section.style.display = 'none';
+    return;
   }
-  const ax = document.createElementNS(svgNS, 'line');
-  ax.setAttribute('x1', scX(0)); ax.setAttribute('y1', scY(0));
-  ax.setAttribute('x2', scX(MAX_EXT)); ax.setAttribute('y2', scY(0));
-  ax.setAttribute('stroke', '#3a3f55'); ax.setAttribute('stroke-width', 1.5);
-  scatter.appendChild(ax);
-  const ay = document.createElementNS(svgNS, 'line');
-  ay.setAttribute('x1', scX(0)); ay.setAttribute('y1', scY(0));
-  ay.setAttribute('x2', scX(0)); ay.setAttribute('y2', scY(MAX_INT));
-  ay.setAttribute('stroke', '#3a3f55'); ay.setAttribute('stroke-width', 1.5);
-  scatter.appendChild(ay);
+  section.style.display = 'block';
 
-  const xticks = MAX_EXT > 8 ? [0, 5, 10, 15] : Array.from({length: MAX_EXT+1}, (_,k)=>k);
-  xticks.forEach(k => {
-    if (k > MAX_EXT) return;
-    const t = document.createElementNS(svgNS, 'text');
-    t.setAttribute('x', scX(k)); t.setAttribute('y', SC_H - SC_PAD_B + 16);
-    t.setAttribute('text-anchor', 'middle');
-    t.setAttribute('fill', '#5a6080');
-    t.style.fontSize = '10px'; t.textContent = k;
-    scatter.appendChild(t);
-  });
-  for (let k = 0; k <= MAX_INT; k++) {
-    const t = document.createElementNS(svgNS, 'text');
-    t.setAttribute('x', SC_PAD_L - 8); t.setAttribute('y', scY(k) + 4);
-    t.setAttribute('text-anchor', 'end');
-    t.setAttribute('fill', '#5a6080');
-    t.style.fontSize = '10px'; t.textContent = k;
-    scatter.appendChild(t);
-  }
+  D.squares.forEach(sq => {
+    const card = document.createElement('div');
+    card.className = 'square-card';
+    card.dataset.squareKey = sq.key;
 
-  const plotCenterX = SC_PAD_L + SC_INNER_W / 2;
-  const plotCenterY = SC_PAD_T + SC_INNER_H / 2;
-
-  const xl = document.createElementNS(svgNS, 'text');
-  xl.setAttribute('x', plotCenterX);
-  xl.setAttribute('y', SC_H - 8);
-  xl.setAttribute('text-anchor', 'middle');
-  xl.setAttribute('fill', '#8a90a8');
-  xl.style.fontSize = '11px'; xl.style.fontWeight = '600';
-  xl.textContent = '|extent|';
-  scatter.appendChild(xl);
-
-  const yl = document.createElementNS(svgNS, 'text');
-  yl.setAttribute('x', 12);
-  yl.setAttribute('y', plotCenterY);
-  yl.setAttribute('text-anchor', 'middle');
-  yl.setAttribute('fill', '#8a90a8');
-  yl.style.fontSize = '11px'; yl.style.fontWeight = '600';
-  yl.setAttribute('transform', `rotate(-90, 12, ${plotCenterY})`);
-  yl.textContent = '|intent|';
-  scatter.appendChild(yl);
-
-  const lt = document.createElementNS(svgNS, 'text');
-  lt.setAttribute('x', LEGEND_X);
-  lt.setAttribute('y', SC_PAD_T + 2);
-  lt.setAttribute('fill', '#8a90a8');
-  lt.style.fontSize = '9px'; lt.style.fontWeight = '700';
-  lt.style.letterSpacing = '0.08em';
-  lt.textContent = 'CONCEPTS';
-  scatter.appendChild(lt);
-
-  const groups = new Map();
-  D.concepts.forEach((c, i) => {
-    const key = `${c.extent.length}|${c.intent.length}`;
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(i);
-  });
-
-  groups.forEach((ids, key) => {
-    const [ex, it] = key.split('|').map(Number);
-    const cx = scX(ex), cy = scY(it);
-    const count = ids.length;
-    const baseR = 8 * Math.sqrt(count);
-
-    const g = document.createElementNS(svgNS, 'g');
-
-    const ring = document.createElementNS(svgNS, 'circle');
-    ring.setAttribute('cx', cx); ring.setAttribute('cy', cy);
-    ring.setAttribute('r', baseR + 5);
-    ring.setAttribute('fill', 'none');
-    ring.setAttribute('stroke', '#fff');
-    ring.setAttribute('stroke-width', 1.5);
-    ring.setAttribute('stroke-dasharray', '3 3');
-    ring.style.display = 'none';
-    ring.style.pointerEvents = 'none';
-    g.appendChild(ring);
-
-    const dot = document.createElementNS(svgNS, 'circle');
-    dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
-    dot.setAttribute('r', baseR);
-    dot.setAttribute('fill', '#5b9bd5');
-    dot.setAttribute('stroke', '#0f1220');
-    dot.setAttribute('stroke-width', '2');
-    dot.style.transition = 'r .25s, fill .25s, filter .25s';
-    g.appendChild(dot);
-
-    if (count > 1) {
-      const num = document.createElementNS(svgNS, 'text');
-      num.setAttribute('x', cx);
-      num.setAttribute('y', cy + 4);
-      num.setAttribute('text-anchor', 'middle');
-      num.setAttribute('fill', '#0f1220');
-      num.style.fontSize = '11px';
-      num.style.fontWeight = '700';
-      num.style.pointerEvents = 'none';
-      num.textContent = count;
-      g.appendChild(num);
+    const title = document.createElement('h3');
+    const keyTag = document.createElement('span');
+    keyTag.className = 'sq-key';
+    keyTag.textContent = sq.key;
+    title.appendChild(keyTag);
+    if (sq.key === 'A') {
+      title.appendChild(document.createTextNode('Layer 1'));
+    } else {
+      const parent = document.createElement('span');
+      parent.className = 'sq-parent';
+      parent.textContent = ` of ${sq.parent_term || ''}`;
+      title.appendChild(document.createTextNode('Layer 2'));
+      title.appendChild(parent);
     }
+    card.appendChild(title);
 
-    scatter.appendChild(g);
-    state.scDotEls.push({ g, dot, ring, ids, key, baseR, count });
+    const svgEl = renderGreimasSquare(sq.squareData, sq.title, sq.key);
+    card.appendChild(svgEl);
 
-    if (count === 1) {
-      const only = ids[0];
-      g.style.cursor = 'pointer';
-      g.addEventListener('mouseenter', () => onEnter(only));
-      g.addEventListener('mouseleave', () => onLeave(only));
-      g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(only); });
-    }
-  });
+    grid.appendChild(card);
 
-  let ly = SC_PAD_T + 16;
-  let lastKey = null;
-  groups.forEach((ids, key) => {
-    if (lastKey !== null) ly += 4;
-    const [ex, it] = key.split('|').map(Number);
-
-    ids.forEach((conceptId) => {
-      const c = D.concepts[conceptId];
-      const rowY = ly + 8;
-
-      const row = document.createElementNS(svgNS, 'g');
-      row.style.cursor = 'pointer';
-
-      const marker = document.createElementNS(svgNS, 'circle');
-      marker.setAttribute('cx', LEGEND_X + 5);
-      marker.setAttribute('cy', rowY);
-      marker.setAttribute('r', 4);
-      marker.setAttribute('fill', '#5b9bd5');
-      marker.setAttribute('stroke', '#0f1220');
-      marker.setAttribute('stroke-width', '1');
-      row.appendChild(marker);
-
-      const label = document.createElementNS(svgNS, 'text');
-      label.setAttribute('x', LEGEND_X + 15);
-      label.setAttribute('y', rowY + 3.5);
-      label.setAttribute('fill', '#c8cde0');
-      label.style.fontSize = '10px';
-      label.style.fontWeight = '600';
-      label.textContent = c.short;
-      row.appendChild(label);
-
-      const posText = document.createElementNS(svgNS, 'text');
-      posText.setAttribute('x', SC_W - 6);
-      posText.setAttribute('y', rowY + 3.5);
-      posText.setAttribute('text-anchor', 'end');
-      posText.setAttribute('fill', '#5a6080');
-      posText.style.fontSize = '8.5px';
-      posText.textContent = `(${ex},${it})`;
-      row.appendChild(posText);
-
-      scatter.appendChild(row);
-      state.scLegendRows.push({ row, marker, label, conceptId });
-
-      row.addEventListener('mouseenter', () => onEnter(conceptId));
-      row.addEventListener('mouseleave', () => onLeave(conceptId));
-      row.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(conceptId); });
-
-      ly += LEGEND_ROW_H;
+    state.squares.push({
+      key: sq.key,
+      title: sq.title,
+      squareData: sq.squareData,
+      cardEl: card,
+      svgEl: svgEl,
     });
+  });
+}
 
-    lastKey = key;
+// =========================================================
+// HIGHLIGHTING LOGIC
+// =========================================================
+
+function applySquareHighlights(concept) {
+  // Reset all
+  state.squares.forEach(sq => {
+    sq.cardEl.classList.remove('active');
+    Object.values(state.squareNodeEls[sq.key] || {}).forEach(el => {
+      el.classList.remove('hl');
+      el.classList.remove('dim');
+    });
+  });
+
+  if (!concept) return;
+
+  const placements = getSquarePlacements(concept);
+
+  if (placements.length === 0) {
+    // No square placements; dim all squares slightly
+    state.squares.forEach(sq => {
+      Object.values(state.squareNodeEls[sq.key] || {}).forEach(el => {
+        el.classList.add('dim');
+      });
+    });
+    return;
+  }
+
+  // Determine active square keys and positions per square
+  const activeBySquare = {};
+  placements.forEach(p => {
+    if (!activeBySquare[p.squareKey]) activeBySquare[p.squareKey] = new Set();
+    activeBySquare[p.squareKey].add(p.position);
+  });
+
+  state.squares.forEach(sq => {
+    const activePositions = activeBySquare[sq.key];
+    const nodeMap = state.squareNodeEls[sq.key] || {};
+    if (activePositions) {
+      sq.cardEl.classList.add('active');
+      Object.entries(nodeMap).forEach(([pos, el]) => {
+        if (activePositions.has(pos)) el.classList.add('hl');
+        else el.classList.add('dim');
+      });
+    } else {
+      Object.values(nodeMap).forEach(el => el.classList.add('dim'));
+    }
   });
 }
 
@@ -842,61 +954,85 @@ function buildScatter() {
 // STATE & INTERACTION
 // =========================================================
 
-function getPinned() { return state.pinnedByDataset[state.currentKey]; }
-function setPinned(v) { state.pinnedByDataset[state.currentKey] = v; }
+function getPinned() {
+  return state.pinnedByDataset[state.currentKey];
+}
+function setPinned(v) {
+  state.pinnedByDataset[state.currentKey] = v;
+}
 
-function onEnter(i) { state.hoverId = i; applyState(i); }
+function getConceptById(id) {
+  if (!state.D || !state.D.concepts) return null;
+  return state.D.concepts.find(c => c.id === id) || null;
+}
+
+function onEnter(id) {
+  state.hoverId = id;
+  applyState(id);
+}
 function onLeave() {
   state.hoverId = null;
   const p = getPinned();
-  if (p !== null) applyState(p);
+  if (p !== null && p !== undefined) applyState(p);
   else clearAll();
 }
-function onToggle(i) {
-  if (getPinned() === i) {
+function onToggle(id) {
+  if (getPinned() === id) {
     setPinned(null);
     if (state.hoverId !== null) applyState(state.hoverId);
     else clearAll();
   } else {
-    setPinned(i);
-    applyState(i);
+    setPinned(id);
+    applyState(id);
   }
   renderPanel();
-  updateGreimas();
 }
 
-function applyState(i) {
+function applyState(id) {
   const D = state.D;
-  state.nodeEls.forEach((el, k) => {
+  if (!D || !D.concepts) return;
+  const idx = D.idToIdx[id];
+  if (idx === undefined) return;
+
+  // highlight lattice
+  state.nodeEls.forEach(el => {
     el.classList.remove('hovered','ancestor','descendant');
-    if (k === i) el.classList.add('hovered');
-    else if (D.ANCS[i].has(k)) el.classList.add('ancestor');
-    else if (D.DESC[i].has(k)) el.classList.add('descendant');
+    const thisId = el.dataset.id;
+    const thisIdx = D.idToIdx[thisId];
+    if (thisIdx === undefined) return;
+    if (thisId === id) el.classList.add('hovered');
+    else if (D.ANCS[idx].has(thisIdx)) el.classList.add('ancestor');
+    else if (D.DESC[idx].has(thisIdx)) el.classList.add('descendant');
   });
+
   state.edgeEls.forEach(line => {
     line.classList.remove('ancestor','descendant');
-    const a = parseInt(line.dataset.a);
-    const b = parseInt(line.dataset.b);
-    const isAbove = (a === i) || D.ANCS[i].has(a);
-    const isBelow = (b === i) || D.DESC[i].has(b);
+    const a = line.dataset.a;
+    const b = line.dataset.b;
+    const ai = D.idToIdx[a];
+    const bi = D.idToIdx[b];
+    if (ai === undefined || bi === undefined) return;
+    const isAbove = (a === id) || D.ANCS[idx].has(ai);
+    const isBelow = (b === id) || D.DESC[idx].has(bi);
     if (isAbove) line.classList.add('ancestor');
     else if (isBelow) line.classList.add('descendant');
   });
-  updatePanel(i);
-  updateScatter(i);
+
+  // highlight squares
+  const concept = getConceptById(id);
+  applySquareHighlights(concept);
+
+  updatePanel(id);
+  updateScatter(id);
 }
 
 function clearAll() {
   state.nodeEls.forEach(el => el.classList.remove('hovered','ancestor','descendant'));
   state.edgeEls.forEach(line => line.classList.remove('ancestor','descendant'));
+  applySquareHighlights(null);
   document.getElementById('info-card').innerHTML =
-    '<h2>Node</h2><div class="hint">Hover a node in the lattice to preview. Click to pin.</div>';
+    '<h2>Node</h2><div class="hint">Hover a node in the architectonic lattice. Click to pin.</div>';
   updateScatter(null);
-}
-
-function refreshPins() {
-  const p = getPinned();
-  state.nodeEls.forEach((el, k) => { el.classList.toggle('pinned', k === p); });
 }
 
 // =========================================================
@@ -908,228 +1044,284 @@ function chipList(arr, cls) {
 }
 function chipNodes(ids, cls) {
   const D = state.D;
-  return ids.map(j => `<span class="chip ${cls}">${D.concepts[j].short}</span>`).join(' ');
+  return ids.map(id => {
+    const c = getConceptById(id);
+    return c ? `<span class="chip ${cls}">${c.short || c.label}</span>` : '';
+  }).join(' ');
 }
 
 function renderPanel() {
   const p = getPinned();
-  if (p !== null) updatePanel(p);
+  if (p !== null && p !== undefined) updatePanel(p);
   else if (state.hoverId !== null) updatePanel(state.hoverId);
   else clearAll();
 }
 
-function updatePanel(i) {
+function updatePanel(id) {
   const D = state.D;
-  const c = D.concepts[i];
-  const N = D.N;
+  const c = getConceptById(id);
+  if (!c) return;
 
+  const idx = D.idToIdx[id];
+  const pinned = (getPinned() === id);
+
+  // group joins and meets
   const joinsByResult = {};
-  for (let j = 0; j < N; j++) {
-    if (j === i) continue;
-    const r = D.join(i, j);
-    (joinsByResult[r] ||= []).push(j);
-  }
   const meetsByResult = {};
-  for (let j = 0; j < N; j++) {
-    if (j === i) continue;
-    const r = D.meet(i, j);
-    (meetsByResult[r] ||= []).push(j);
-  }
-  const asJoinOf = [];
-  for (let x = 0; x < N; x++) {
-    if (x === i) continue;
-    for (let y = x + 1; y < N; y++) {
-      if (y === i) continue;
-      if (D.join(x, y) === i) asJoinOf.push([x, y]);
-    }
-  }
-  const asMeetOf = [];
-  for (let x = 0; x < N; x++) {
-    if (x === i) continue;
-    for (let y = x + 1; y < N; y++) {
-      if (y === i) continue;
-      if (D.meet(x, y) === i) asMeetOf.push([x, y]);
-    }
+  for (let j = 0; j < D.N; j++) {
+    if (j === idx) continue;
+    const rj = D.join(idx, j);
+    (joinsByResult[rj] ||= []).push(j);
+    const rm = D.meet(idx, j);
+    (meetsByResult[rm] ||= []).push(j);
   }
 
-  const pinnedBadge = (getPinned() === i)
+  const pinnedBadge = pinned
     ? `<span class="pin-badge">📌 pinned</span>`
     : `<span class="pin-hint">click to pin</span>`;
 
-  let html = `<h2>Node</h2>`;
-  html += `<div class="node-title">${c.name} ${pinnedBadge}</div>`;
+  const placements = getSquarePlacements(c);
 
-  html += `<div class="section-title first">Extent</div>`;
-  html += c.extent.length
+  let html = `<h2>Node</h2>`;
+  html += `<div class="node-title">${c.name || c.label} ${pinnedBadge}</div>`;
+
+  // Layer/origin info
+  html += `<div class="section-title first">Position in Architectonic</div>`;
+  html += `<div class="kv"><span class="k">Layer:</span> ${c.layer}</div>`;
+  html += `<div class="kv"><span class="k">Origin:</span> ${c.origin === 'A' ? 'Base square A' : 'B[' + c.origin + ']'}</div>`;
+  html += `<div class="kv"><span class="k">Role:</span> ${(c.role || '').replace(/_/g,' ')}</div>`;
+
+  // Square placements
+  html += `<div class="section-title">Greimas Square Placements</div>`;
+  if (placements.length === 0) {
+    html += `<div class="kv" style="color:var(--text-dim);font-size:12.5px;">This concept has no counterpart on any Greimas square. It appears in the architectonic only — marked with an X when highlighted.</div>`;
+  } else {
+    const bySquare = {};
+    placements.forEach(p => {
+      if (!bySquare[p.squareKey]) bySquare[p.squareKey] = [];
+      bySquare[p.squareKey].push(p.position);
+    });
+    Object.entries(bySquare).forEach(([sqKey, positions]) => {
+      html += `<div class="kv">On <span class="chip self">${sqKey}</span>: ${positions.map(p => '<span class="chip">'+p+'</span>').join(' ')}</div>`;
+    });
+  }
+
+  // Extent / intent
+  html += `<div class="section-title">Extent</div>`;
+  html += c.extent && c.extent.length
     ? `<div class="chips">${chipList(c.extent, 'obj')}</div>`
     : `<div class="hint" style="font-size:12px;">∅ — nothing</div>`;
-
   html += `<div class="section-title">Intent</div>`;
-  html += c.intent.length
+  html += c.intent && c.intent.length
     ? `<div class="chips">${chipList(c.intent, 'attr')}</div>`
     : `<div class="hint" style="font-size:12px;">∅ — nothing shared</div>`;
 
-  if (D.greimas) {
-    const gKey = D.greimas.mapping[i];
-    if (gKey !== undefined) {
-      const gNode = D.greimas.nodes[gKey];
-      const info = D.greimasInfo ? D.greimasInfo[gKey] : null;
-      html += `<div class="section-title">Greimas Square</div>`;
-      html += `<div class="kv">Corresponds to <span class="chip self">${gNode.label}</span> in the Greimas square below.</div>`;
-      if (info) {
-        html += `<div class="kv" style="margin-top:8px;"><span class="k">${info.type}</span></div>`;
-        if (info.fulfill && info.fulfill.length) {
-          html += `<div class="kv" style="margin-top:8px;color:#b8bed4;font-weight:600;font-size:12px;">How it fulfills the requirements:</div>`;
-          info.fulfill.forEach(f => { html += `<div class="bullet">${f}</div>`; });
-        }
-        if (info.relations && info.relations.length) {
-          html += `<div class="kv" style="margin-top:8px;color:#b8bed4;font-weight:600;font-size:12px;">Relations:</div>`;
-          info.relations.forEach(r => { html += `<div class="bullet">${r}</div>`; });
-        }
-        if (info.note) {
-          html += `<div class="kv" style="margin-top:8px;color:var(--text-dim);font-size:12.5px;">${info.note}</div>`;
-        }
-      }
-    } else {
-      html += `<div class="section-title">Greimas Square</div>`;
-      html += `<div class="kv" style="color:var(--text-dim);font-size:12.5px;">This concept has no counterpart in the Greimas square. It appears in the lattice only — marked with an X when highlighted.</div>`;
-    }
-  }
-
+  // Hierarchy
   html += `<div class="section-title">Hierarchy</div>`;
+  const parents = D.parents[idx] || [];
+  const children = D.children[idx] || [];
   html += `<div class="kv"><span class="k">Covered by:</span> ${
-    D.parents[i].length ? chipNodes(D.parents[i], 'anc')
-                        : `<span class="hint" style="font-size:12px;">nothing (top)</span>`
+    parents.length ? parents.map(i => {
+      const cc = D.concepts[i];
+      return `<span class="chip anc">${cc.short || cc.label}</span>`;
+    }).join(' ') : `<span class="hint" style="font-size:12px;">nothing (top)</span>`
   }</div>`;
   html += `<div class="kv"><span class="k">Covers:</span> ${
-    D.children[i].length ? chipNodes(D.children[i], 'desc')
-                         : `<span class="hint" style="font-size:12px;">nothing (bottom)</span>`
+    children.length ? children.map(i => {
+      const cc = D.concepts[i];
+      return `<span class="chip desc">${cc.short || cc.label}</span>`;
+    }).join(' ') : `<span class="hint" style="font-size:12px;">nothing (bottom)</span>`
   }</div>`;
 
+  // Joins and meets
   html += `<div class="section-title">Joins with other nodes</div>`;
   html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊔ each other node:</div>`;
   Object.keys(joinsByResult).sort((a,b)=>+a - +b).forEach(r => {
-    html += `<div class="kv"><span class="arrow-anc">⊔ → ${D.concepts[r].short}</span><br>`;
-    html += `with ${chipNodes(joinsByResult[r], '')}</div>`;
+    const rc = D.concepts[r];
+    html += `<div class="kv"><span class="arrow-anc">⊔ → ${rc.short || rc.label}</span><br>`;
+    html += `with ${joinsByResult[r].map(i => {
+      const cc = D.concepts[i];
+      return `<span class="chip">${cc.short || cc.label}</span>`;
+    }).join(' ')}</div>`;
   });
 
   html += `<div class="section-title">Meets with other nodes</div>`;
   html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊓ each other node:</div>`;
   Object.keys(meetsByResult).sort((a,b)=>+a - +b).forEach(r => {
-    html += `<div class="kv"><span class="arrow-desc">⊓ → ${D.concepts[r].short}</span><br>`;
-    html += `with ${chipNodes(meetsByResult[r], '')}</div>`;
+    const rc = D.concepts[r];
+    html += `<div class="kv"><span class="arrow-desc">⊓ → ${rc.short || rc.label}</span><br>`;
+    html += `with ${meetsByResult[r].map(i => {
+      const cc = D.concepts[i];
+      return `<span class="chip">${cc.short || cc.label}</span>`;
+    }).join(' ')}</div>`;
   });
 
-  if (asJoinOf.length) {
-    html += `<div class="section-title">This node as a join</div>`;
-    asJoinOf.forEach(([x, y]) => {
-      html += `<div class="kv"><span class="chip self">${D.concepts[x].short} ⊔ ${D.concepts[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
-    });
-  }
-  if (asMeetOf.length) {
-    html += `<div class="section-title">This node as a meet</div>`;
-    asMeetOf.forEach(([x, y]) => {
-      html += `<div class="kv"><span class="chip self">${D.concepts[x].short} ⊓ ${D.concepts[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
-    });
-  }
   document.getElementById('info-card').innerHTML = html;
 }
 
 // =========================================================
-// SCATTER UPDATE
+// SCATTER
 // =========================================================
 
-function updateScatter(i) {
+function buildScatter() {
   const D = state.D;
-  const p = getPinned();
+  const scatter = document.getElementById('scatter');
+  scatter.innerHTML = '';
+  state.scDotEls = [];
 
-  state.scDotEls.forEach(({ dot, ring, ids, baseR }) => {
-    let s = 'neutral';
-    if (i !== null) {
-      if (ids.includes(i)) s = 'hovered';
-      else if (ids.some(id => D.ANCS[i].has(id))) s = 'ancestor';
-      else if (ids.some(id => D.DESC[i].has(id))) s = 'descendant';
-    }
-    if (s === 'neutral') {
-      dot.setAttribute('r', baseR);
-      dot.setAttribute('fill', '#5b9bd5');
-      dot.style.filter = 'none';
-    } else if (s === 'hovered') {
-      dot.setAttribute('r', baseR * 1.35);
-      dot.setAttribute('fill', '#ffd23f');
-      dot.style.filter = 'drop-shadow(0 0 10px rgba(255,210,63,1))';
-    } else if (s === 'ancestor') {
-      dot.setAttribute('r', baseR * 1.08);
-      dot.setAttribute('fill', '#ff8c42');
-      dot.style.filter = 'drop-shadow(0 0 6px rgba(255,140,66,.7))';
-    } else if (s === 'descendant') {
-      dot.setAttribute('r', baseR * 1.08);
-      dot.setAttribute('fill', '#e63946');
-      dot.style.filter = 'drop-shadow(0 0 6px rgba(230,57,70,.7))';
-    }
-    ring.style.display = (p !== null && ids.includes(p)) ? 'block' : 'none';
+  if (!D || !D.concepts) return;
+
+  const SC_W = 460, SC_H = 320;
+  const SC_PAD_L = 44, SC_PAD_R = 30, SC_PAD_T = 20, SC_PAD_B = 40;
+  const innerW = SC_W - SC_PAD_L - SC_PAD_R;
+  const innerH = SC_H - SC_PAD_T - SC_PAD_B;
+
+  scatter.setAttribute('viewBox', `0 0 ${SC_W} ${SC_H}`);
+
+  const maxExt = Math.max(...D.concepts.map(c => (c.extent||[]).length), 1);
+  const maxInt = Math.max(...D.concepts.map(c => (c.intent||[]).length), 1);
+
+  const scX = v => SC_PAD_L + (v / maxExt) * innerW;
+  const scY = v => SC_H - SC_PAD_B - (v / maxInt) * innerH;
+
+  // axes
+  const ax = document.createElementNS(svgNS, 'line');
+  ax.setAttribute('x1', SC_PAD_L); ax.setAttribute('y1', SC_H - SC_PAD_B);
+  ax.setAttribute('x2', SC_W - SC_PAD_R); ax.setAttribute('y2', SC_H - SC_PAD_B);
+  ax.setAttribute('stroke', '#3a3f55'); ax.setAttribute('stroke-width', 1.5);
+  scatter.appendChild(ax);
+  const ay = document.createElementNS(svgNS, 'line');
+  ay.setAttribute('x1', SC_PAD_L); ay.setAttribute('y1', SC_PAD_T);
+  ay.setAttribute('x2', SC_PAD_L); ay.setAttribute('y2', SC_H - SC_PAD_B);
+  ay.setAttribute('stroke', '#3a3f55'); ay.setAttribute('stroke-width', 1.5);
+  scatter.appendChild(ay);
+
+  // labels
+  const xl = document.createElementNS(svgNS, 'text');
+  xl.setAttribute('x', SC_PAD_L + innerW/2);
+  xl.setAttribute('y', SC_H - 8);
+  xl.setAttribute('text-anchor', 'middle');
+  xl.setAttribute('fill', '#8a90a8');
+  xl.style.fontSize = '11px'; xl.style.fontWeight = '600';
+  xl.textContent = '|extent|';
+  scatter.appendChild(xl);
+
+  const yl = document.createElementNS(svgNS, 'text');
+  yl.setAttribute('x', 12); yl.setAttribute('y', SC_PAD_T + innerH/2);
+  yl.setAttribute('text-anchor', 'middle');
+  yl.setAttribute('fill', '#8a90a8');
+  yl.style.fontSize = '11px'; yl.style.fontWeight = '600';
+  yl.setAttribute('transform', `rotate(-90, 12, ${SC_PAD_T + innerH/2})`);
+  yl.textContent = '|intent|';
+  scatter.appendChild(yl);
+
+  // group by position
+  const groups = new Map();
+  D.concepts.forEach((c, i) => {
+    const key = `${(c.extent||[]).length}|${(c.intent||[]).length}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(i);
   });
 
-  state.scLegendRows.forEach(({ marker, label, conceptId }) => {
+  groups.forEach((idxs, key) => {
+    const [ex, it] = key.split('|').map(Number);
+    const cx = scX(ex), cy = scY(it);
+    const count = idxs.length;
+    const baseR = 5 * Math.sqrt(count);
+
+    const circle = document.createElementNS(svgNS, 'circle');
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', Math.max(baseR, 3));
+    circle.setAttribute('fill', '#5b9bd5');
+    circle.setAttribute('stroke', '#0f1220');
+    circle.setAttribute('stroke-width', '1.5');
+    circle.style.transition = 'r .25s, fill .25s, filter .25s';
+    scatter.appendChild(circle);
+
+    if (count > 1) {
+      const t = document.createElementNS(svgNS, 'text');
+      t.setAttribute('x', cx); t.setAttribute('y', cy + 3);
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('fill', '#0f1220');
+      t.style.fontSize = '8px'; t.style.fontWeight = '700';
+      t.style.pointerEvents = 'none';
+      t.textContent = count;
+      scatter.appendChild(t);
+    }
+
+    state.scDotEls.push({ circle, idxs, baseR: Math.max(baseR, 3) });
+  });
+}
+
+function updateScatter(id) {
+  const D = state.D;
+  if (!D) return;
+  const idx = id !== null ? D.idToIdx[id] : undefined;
+  const pinned = getPinned();
+
+  state.scDotEls.forEach(({ circle, idxs, baseR }) => {
     let s = 'neutral';
-    if (i !== null) {
-      if (conceptId === i) s = 'hovered';
-      else if (D.ANCS[i].has(conceptId)) s = 'ancestor';
-      else if (D.DESC[i].has(conceptId)) s = 'descendant';
-      else s = 'dim';
+    if (idx !== undefined) {
+      if (idxs.includes(idx)) s = 'hovered';
+      else if (idxs.some(i => D.ANCS[idx].has(i))) s = 'ancestor';
+      else if (idxs.some(i => D.DESC[idx].has(i))) s = 'descendant';
     }
     if (s === 'neutral') {
-      marker.setAttribute('fill', '#5b9bd5'); label.setAttribute('fill', '#c8cde0');
+      circle.setAttribute('r', baseR);
+      circle.setAttribute('fill', '#5b9bd5');
+      circle.style.filter = 'none';
     } else if (s === 'hovered') {
-      marker.setAttribute('fill', '#ffd23f'); label.setAttribute('fill', '#ffd23f');
+      circle.setAttribute('r', baseR * 1.5);
+      circle.setAttribute('fill', '#ffd23f');
+      circle.style.filter = 'drop-shadow(0 0 8px rgba(255,210,63,1))';
     } else if (s === 'ancestor') {
-      marker.setAttribute('fill', '#ff8c42'); label.setAttribute('fill', '#ff8c42');
+      circle.setAttribute('r', baseR * 1.2);
+      circle.setAttribute('fill', '#ff8c42');
+      circle.style.filter = 'drop-shadow(0 0 5px rgba(255,140,66,.7))';
     } else if (s === 'descendant') {
-      marker.setAttribute('fill', '#e63946'); label.setAttribute('fill', '#e63946');
-    } else {
-      marker.setAttribute('fill', '#3a3f55'); label.setAttribute('fill', '#5a6080');
+      circle.setAttribute('r', baseR * 1.2);
+      circle.setAttribute('fill', '#e63946');
+      circle.style.filter = 'drop-shadow(0 0 5px rgba(230,57,70,.7))';
     }
   });
-  refreshPins();
 }
 
 // =========================================================
-// TAB SWITCHING
+// TAB SWITCHING / DATA LOADING
 // =========================================================
 
 function switchTo(key) {
   state.currentKey = key;
-  state.D = processDataset(DATASETS[key]);
+  state.D = state.datasets[key];
   state.hoverId = null;
 
-  document.getElementById('page-title').textContent = state.D.title;
-  document.getElementById('page-subtitle').textContent = state.D.subtitle;
+  document.getElementById('page-title').textContent = state.D.title || 'Architectonic Greimas Viewer';
+  document.getElementById('page-subtitle').textContent = state.D.subtitle || '';
 
   document.querySelectorAll('.tab').forEach(t => {
     t.classList.toggle('active', t.dataset.key === key);
   });
 
   buildLattice();
+  buildGreimasSquares();
   buildScatter();
-  buildGreimas();
 
   const p = getPinned();
-  if (p !== null) applyState(p);
+  if (p !== null && p !== undefined) applyState(p);
   else clearAll();
   renderPanel();
-  updateGreimas();
 }
 
 const TAB_LABELS = {
-  planets: 'Solar System',
-  freedom2: 'Freedom (2 axes)',
-  custom: 'Custom'
+  architectonic: 'Architectonic (demo)',
+  custom: 'Custom',
 };
 
 function buildTabs() {
   const bar = document.getElementById('tabbar');
   bar.innerHTML = '';
-  Object.keys(DATASETS).forEach(key => {
+  Object.keys(state.datasets).forEach(key => {
     const btn = document.createElement('button');
     btn.className = 'tab';
     btn.dataset.key = key;
@@ -1142,231 +1334,53 @@ function buildTabs() {
   });
 }
 
-// =========================================================
-// JSON → DATASET
-// =========================================================
-
-function buildGreimasInfo(square) {
-  const S1 = square.S1, S2 = square.S2, NS2 = square['~S2'], NS1 = square['~S1'];
-  const b = s => `<b>${s}</b>`;
-  const k = (cls, s) => `<span class="relation-key ${cls}">${s}</span>`;
-
-  return {
-    'S1': {
-      type: 'Inner term — S1 (positive pole)',
-      fulfill: [
-        `Contrary to ${b(S2)}: both can hold together, both can fail together, or either can hold alone.`,
-        `Contradictory to ${b(NS1)}: every subject satisfies exactly one of the pair.`,
-        `Implied by ${b(NS2)}: any subject satisfying ${NS2} also satisfies ${S1}.`
-      ],
-      relations: [
-        `Contrary: ${k('contr', S2)}`,
-        `Contradictory: ${k('contra', NS1)}`,
-        `Implied by: ${k('impl', NS2)}`
-      ]
-    },
-    'S2': {
-      type: 'Inner term — S2 (positive pole)',
-      fulfill: [
-        `Contrary to ${b(S1)}: both can hold together, both can fail together, or either can hold alone.`,
-        `Contradictory to ${b(NS2)}: every subject satisfies exactly one of the pair.`,
-        `Implied by ${b(NS1)}: any subject satisfying ${NS1} also satisfies ${S2}.`
-      ],
-      relations: [
-        `Contrary: ${k('contr', S1)}`,
-        `Contradictory: ${k('contra', NS2)}`,
-        `Implied by: ${k('impl', NS1)}`
-      ]
-    },
-    'NS2': {
-      type: 'Inner term — ~S2 (contradictory of S2)',
-      fulfill: [
-        `Contradictory to ${b(S2)}: exactly one of the pair holds.`,
-        `Contrary to ${b(NS1)}: both can hold together, both can fail together, or either can hold alone.`,
-        `Implies ${b(S1)}: every subject satisfying ${NS2} also satisfies ${S1}.`
-      ],
-      relations: [
-        `Contradictory: ${k('contra', S2)}`,
-        `Contrary: ${k('contr', NS1)}`,
-        `Implies: ${k('impl', S1)}`
-      ]
-    },
-    'NS1': {
-      type: 'Inner term — ~S1 (contradictory of S1)',
-      fulfill: [
-        `Contradictory to ${b(S1)}: exactly one of the pair holds.`,
-        `Contrary to ${b(NS2)}: both can hold together, both can fail together, or either can hold alone.`,
-        `Implies ${b(S2)}: every subject satisfying ${NS1} also satisfies ${S2}.`
-      ],
-      relations: [
-        `Contradictory: ${k('contra', S1)}`,
-        `Contrary: ${k('contr', NS2)}`,
-        `Implies: ${k('impl', S2)}`
-      ]
-    },
-    'M11': {
-      type: 'Meta-term — Complex axis (S1 + S2)',
-      fulfill: [], relations: [],
-      note: `Not an inner term. It is the join of the two positive poles. Contrariety, contradictoriness, and implication apply to its inner components, not to it directly. Composition: ${b(S1 + ' + ' + S2)}.`
-    },
-    'M12': {
-      type: 'Meta-term — Neutral axis (~S1 + ~S2)',
-      fulfill: [], relations: [],
-      note: `Not an inner term. It is the join of the two negative poles. Contrariety, contradictoriness, and implication apply to its inner components, not to it directly. Composition: ${b(NS1 + ' + ' + NS2)}.`
-    },
-    'M13': {
-      type: 'Meta-term — Positive deixis (S1 + ~S2)',
-      fulfill: [], relations: [],
-      note: `Not an inner term. This is the pair connected by the implication ~S2 → S1. It combines the implied with its implier. Composition: ${b(S1 + ' + ' + NS2)}.`
-    },
-    'M14': {
-      type: 'Meta-term — Negative deixis (S2 + ~S1)',
-      fulfill: [], relations: [],
-      note: `Not an inner term. This is the pair connected by the implication ~S1 → S2. Composition: ${b(S2 + ' + ' + NS1)}.`
-    },
-    'M21': {
-      type: 'Second-tier meta-term (M₂) — omits ~S1',
-      fulfill: [], relations: [],
-      note: `Contains three of the four inner terms. Composition: ${b(S1 + ' + ' + S2 + ' + ' + NS2)}.`
-    },
-    'M22': {
-      type: 'Second-tier meta-term (M₂) — omits ~S2',
-      fulfill: [], relations: [],
-      note: `Contains three of the four inner terms. Composition: ${b(S1 + ' + ' + S2 + ' + ' + NS1)}.`
-    },
-    'M23': {
-      type: 'Second-tier meta-term (M₂) — omits S2',
-      fulfill: [], relations: [],
-      note: `Contains three of the four inner terms. Composition: ${b(S1 + ' + ' + NS1 + ' + ' + NS2)}.`
-    },
-    'M24': {
-      type: 'Second-tier meta-term (M₂) — omits S1',
-      fulfill: [], relations: [],
-      note: `Contains three of the four inner terms. Composition: ${b(S2 + ' + ' + NS1 + ' + ' + NS2)}.`
-    }
-  };
-}
-
-function classifyExtent(ext, S1, S2, NS2, NS1) {
-  const set = new Set(ext);
-  const size = set.size;
-  const has = (...xs) => xs.every(x => set.has(x));
-  if (size === 0) return { role: 'bottom' };
-  if (size === 4) return { role: 'top' };
-  if (size === 1) {
-    if (set.has(S1))  return { role: 'inner', key: 'S1',  x: 0.18, y: 0.30 };
-    if (set.has(S2))  return { role: 'inner', key: 'S2',  x: 0.40, y: 0.30 };
-    if (set.has(NS2)) return { role: 'inner', key: 'NS2', x: 0.60, y: 0.30 };
-    if (set.has(NS1)) return { role: 'inner', key: 'NS1', x: 0.82, y: 0.30 };
-  }
-  if (size === 2) {
-    if (has(S1, S2))  return { role: 'm1', key: 'M11', x: 0.10, y: 0.52 };
-    if (has(S1, NS1)) return { role: 'mixed', key: 'Mixed1', x: 0.24, y: 0.52 };
-    if (has(S1, NS2)) return { role: 'm1', key: 'M13', x: 0.40, y: 0.52 };
-    if (has(S2, NS1)) return { role: 'm1', key: 'M14', x: 0.56, y: 0.52 };
-    if (has(S2, NS2)) return { role: 'mixed', key: 'Mixed2', x: 0.72, y: 0.52 };
-    if (has(NS1, NS2)) return { role: 'm1', key: 'M12', x: 0.90, y: 0.52 };
-  }
-  if (size === 3) {
-    if (has(S1, S2, NS1)) return { role: 'm2', key: 'M22', x: 0.10, y: 0.76 };
-    if (has(S1, S2, NS2)) return { role: 'm2', key: 'M21', x: 0.35, y: 0.76 };
-    if (has(S1, NS1, NS2)) return { role: 'm2', key: 'M23', x: 0.65, y: 0.76 };
-    if (has(S2, NS1, NS2)) return { role: 'm2', key: 'M24', x: 0.90, y: 0.76 };
-  }
-  return { role: 'unknown', x: 0.50, y: 0.50 };
-}
-
-function buildDatasetFromJson(parsed) {
+function buildDatasetFromArchitectonicJson(parsed) {
   if (!parsed || typeof parsed !== 'object') throw new Error('Top-level JSON is not an object.');
-  const { square, lattice, metadata } = parsed;
-  if (!square || typeof square !== 'object') throw new Error('Missing "square" section.');
-  if (!lattice || !Array.isArray(lattice.concepts) || !Array.isArray(lattice.edges)) {
-    throw new Error('Missing or invalid "lattice" section (need concepts and edges arrays).');
+  const { architectonic, layer_1, layer_2 } = parsed;
+  if (!architectonic || !Array.isArray(architectonic.concepts) || !Array.isArray(architectonic.edges)) {
+    throw new Error('Missing or invalid "architectonic" section.');
   }
-  const required = ['S1','S2','~S2','~S1','M11','M12','M13','M14','M21','M22','M23','M24','Mixed1','Mixed2'];
-  for (const k of required) {
-    if (typeof square[k] !== 'string' || !square[k].trim()) {
-      throw new Error(`Missing or empty square.${k}`);
+  if (!layer_1 || !layer_1.square) {
+    throw new Error('Missing "layer_1.square".');
+  }
+  if (!layer_2 || typeof layer_2 !== 'object') {
+    throw new Error('Missing "layer_2".');
+  }
+
+  // Build squares list
+  const squares = [{
+    key: 'A',
+    title: 'A (Layer 1)',
+    squareData: layer_1.square,
+    parent_term: null,
+  }];
+  for (const seme_key of ['S1', 'S2', '~S1', '~S2']) {
+    const b = layer_2[seme_key];
+    if (b && b.square) {
+      squares.push({
+        key: seme_key,
+        title: `B[${seme_key}] of ${b.parent_term}`,
+        squareData: b.square,
+        parent_term: b.parent_term || '',
+      });
     }
   }
 
-  const S1 = square.S1.trim(), S2 = square.S2.trim();
-  const NS2 = square['~S2'].trim(), NS1 = square['~S1'].trim();
-
-  // Layout for greimas square (fixed positions)
-  const gnodes = {
-    'S1':  { x: 220, y: 190, label: S1,  tier: 'inner', labelPos: 'below' },
-    'S2':  { x: 400, y: 190, label: S2,  tier: 'inner', labelPos: 'below' },
-    'NS2': { x: 220, y: 330, label: NS2, tier: 'inner', labelPos: 'above' },
-    'NS1': { x: 400, y: 330, label: NS1, tier: 'inner', labelPos: 'above' },
-    'M11': { x: 310, y: 90,  label: square.M11, tier: 'm1', labelPos: 'below' },
-    'M13': { x: 120, y: 260, label: square.M13, tier: 'm1', labelPos: 'left'  },
-    'M14': { x: 500, y: 260, label: square.M14, tier: 'm1', labelPos: 'right' },
-    'M12': { x: 310, y: 430, label: square.M12, tier: 'm1', labelPos: 'above' },
-    'M21': { x: 70,  y: 50,  label: square.M21, tier: 'm2', labelPos: 'below' },
-    'M22': { x: 550, y: 50,  label: square.M22, tier: 'm2', labelPos: 'below' },
-    'M23': { x: 70,  y: 470, label: square.M23, tier: 'm2', labelPos: 'above' },
-    'M24': { x: 550, y: 470, label: square.M24, tier: 'm2', labelPos: 'above' }
-  };
-  const gedges = [
-    ['S1','S2','inner'], ['NS2','NS1','inner'],
-    ['S1','NS1','inner'], ['S2','NS2','inner'],
-    ['S1','NS2','inner'], ['S2','NS1','inner'],
-    ['S1','M11','inner-m1'], ['S2','M11','inner-m1'],
-    ['S1','M13','inner-m1'], ['NS2','M13','inner-m1'],
-    ['S2','M14','inner-m1'], ['NS1','M14','inner-m1'],
-    ['NS2','M12','inner-m1'], ['NS1','M12','inner-m1'],
-    ['M11','M21','m1-m2'], ['M11','M22','m1-m2'],
-    ['M13','M21','m1-m2'], ['M13','M23','m1-m2'],
-    ['M14','M22','m1-m2'], ['M14','M24','m1-m2'],
-    ['M12','M23','m1-m2'], ['M12','M24','m1-m2']
-  ];
-
-  // Add positions to concepts, and build greimas mapping
-  const greimasMapping = {};
-  const concepts = lattice.concepts.map(c => {
-    const ext = Array.isArray(c.extent) ? c.extent : [];
-    const cls = classifyExtent(ext, S1, S2, NS2, NS1);
-    let x = cls.x, y = cls.y;
-    if (cls.role === 'bottom') { x = 0.50; y = 0.06; }
-    if (cls.role === 'top')    { x = 0.50; y = 0.96; }
-    if (cls.key && cls.role !== 'mixed') {
-      greimasMapping[c.id] = cls.key;
-    }
-    return {
-      id: c.id,
-      label: c.label || c.short || `C${c.id}`,
-      short: c.short || c.label || `C${c.id}`,
-      name: c.name || c.label || `Concept ${c.id}`,
-      extent: ext,
-      intent: Array.isArray(c.intent) ? c.intent : [],
-      x, y
-    };
-  });
-
-  const titleSuffix = (metadata && metadata.s1_input && metadata.s2_input)
-    ? ` — ${metadata.s1_input} / ${metadata.s2_input}`
-    : '';
+  const squaresByKey = {};
+  squares.forEach(s => { squaresByKey[s.key] = s; });
 
   return {
-    title: `Concept Lattice${titleSuffix}`,
-    subtitle: 'Custom Greimas square. Four inner terms as objects; four M₂ meta-terms as attributes.',
-    viewBox: { w: 800, h: 700 },
-    padX: 70, padY: 80, nodeR: 24, labelLines: false,
-    scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42, maxExt: 4, maxInt: 4 },
-    concepts: concepts,
-    edges: lattice.edges,
-    greimas: {
-      viewBox: { w: 620, h: 520 },
-      nodes: gnodes,
-      edges: gedges,
-      mapping: greimasMapping
-    },
-    greimasInfo: buildGreimasInfo({S1, S2, '~S2': NS2, '~S1': NS1,
-                                   M11: square.M11, M12: square.M12,
-                                   M13: square.M13, M14: square.M14,
-                                   M21: square.M21, M22: square.M22,
-                                   M23: square.M23, M24: square.M24})
+    title: parsed.metadata && parsed.metadata.seed
+      ? `Architectonic — Seed ${parsed.metadata.seed}`
+      : 'Architectonic',
+    subtitle: parsed.metadata
+      ? `Seeded from ${parsed.metadata.seed} (${parsed.metadata.seed_s1} / ${parsed.metadata.seed_s2})`
+      : '',
+    concepts: architectonic.concepts,
+    edges: architectonic.edges,
+    layer1Square: layer_1.square,
+    squares: squares,
+    squaresByKey: squaresByKey,
   };
 }
 
@@ -1393,31 +1407,318 @@ function handleJsonUpdate() {
   }
   let dataset;
   try {
-    dataset = buildDatasetFromJson(parsed);
+    dataset = buildDatasetFromArchitectonicJson(parsed);
   } catch (e) {
     status.className = 'json-status err';
     status.textContent = `Invalid structure: ${e.message}`;
     return;
   }
-  DATASETS.custom = dataset;
+  // Process the dataset (compute ancestors, joins, meets)
+  const processed = processDataset(dataset);
+  state.datasets.custom = processed;
   state.pinnedByDataset.custom = null;
   buildTabs();
   switchTo('custom');
   status.className = 'json-status ok';
-  status.textContent = `Loaded. ${dataset.concepts.length} concepts, ${dataset.edges.length} edges.`;
+  status.textContent = `Loaded. ${processed.N} concepts, ${processed.edges.length} edges, ${dataset.squares.length} squares.`;
 }
 
 // =========================================================
-// GLOBAL HANDLERS
+// DEMO DATASET (so the page is not empty)
+// =========================================================
+
+function buildDemoArchitectonic() {
+  // Minimal demo: layer 1 + one B (S1) with plausible content.
+  // Users will normally paste the JSON from the Python script.
+
+  const A = {
+    S1: "being", S2: "seeming",
+    "~S2": "non-seeming", "~S1": "non-being",
+    M11: "truth", M12: "falsehood", M13: "secret", M14: "lie",
+    M21: "revelation", M22: "paradox", M23: "subterfuge", M24: "deception",
+    Mixed1: "Mixed-being", Mixed2: "Mixed-seeming",
+  };
+  const BS1 = {
+    S1: "substance", S2: "appearance",
+    "~S2": "non-appearance", "~S1": "non-substance",
+    M11: "manifest being", M12: "nothing", M13: "hidden being", M14: "illusion",
+    M21: "subsistence", M22: "manifestation", M23: "latency", M24: "semblance",
+    Mixed1: "Mixed-substance", Mixed2: "Mixed-appearance",
+  };
+  const BS2 = {
+    S1: "showing", S2: "shown",
+    "~S2": "hidden", "~S1": "hiding",
+    M11: "display", M12: "concealment", M13: "epiphany", M14: "disguise",
+    M21: "presentation", M22: "revealing", M23: "latent showing", M24: "semblance of shown",
+    Mixed1: "Mixed-showing", Mixed2: "Mixed-shown",
+  };
+  const BNS1 = {
+    S1: "void", S2: "other",
+    "~S2": "same", "~S1": "plenum",
+    M11: "absence", M12: "presence", M13: "empty sameness", M14: "alien fullness",
+    M21: "negation", M22: "affirmation", M23: "nullity", M24: "alterity",
+    Mixed1: "Mixed-void", Mixed2: "Mixed-other",
+  };
+  const BNS2 = {
+    S1: "concealment", S2: "latency",
+    "~S2": "emergence", "~S1": "disclosure",
+    M11: "opacity", M12: "openness", M13: "buried emergence", M14: "appearing concealment",
+    M21: "hiddenness", M22: "appearance", M23: "buried emergence", M24: "appearing concealment",
+    Mixed1: "Mixed-concealment", Mixed2: "Mixed-latency",
+  };
+
+  const layer_1 = { square: A };
+  const layer_2 = {
+    "S1": { parent_term: "being", square: BS1 },
+    "S2": { parent_term: "seeming", square: BS2 },
+    "~S1": { parent_term: "non-being", square: BNS1 },
+    "~S2": { parent_term: "non-seeming", square: BNS2 },
+  };
+
+  // Build the architectonic lattice from the squares
+  const architectonic = buildArchitectonicFromSquares(layer_1, layer_2);
+
+  return {
+    title: 'Architectonic — Veridictory Demo',
+    subtitle: 'A two-layer architectonic. Demo dataset; paste your own JSON to replace.',
+    concepts: architectonic.concepts,
+    edges: architectonic.edges,
+    layer1Square: A,
+    squares: (() => {
+      const sqs = [{
+        key: 'A', title: 'A (Layer 1)', squareData: A, parent_term: null,
+      }];
+      for (const k of ['S1','S2','~S1','~S2']) {
+        sqs.push({
+          key: k,
+          title: `B[${k}] of ${layer_2[k].parent_term}`,
+          squareData: layer_2[k].square,
+          parent_term: layer_2[k].parent_term,
+        });
+      }
+      return sqs;
+    })(),
+    squaresByKey: (() => {
+      const m = {};
+      m['A'] = { key: 'A', title: 'A (Layer 1)', squareData: A };
+      for (const k of ['S1','S2','~S1','~S2']) {
+        m[k] = {
+          key: k,
+          title: `B[${k}] of ${layer_2[k].parent_term}`,
+          squareData: layer_2[k].square,
+        };
+      }
+      return m;
+    })(),
+  };
+}
+
+function buildArchitectonicFromSquares(layer_1, layer_2) {
+  // Build lattices for each square
+  const A_lat = buildSingleSquareLattice(layer_1.square);
+  const B_lats = {};
+  for (const k of ['S1','S2','~S1','~S2']) {
+    B_lats[k] = buildSingleSquareLattice(layer_2[k].square);
+  }
+
+  // Build architectonic
+  const concepts = [];
+  const edges = [];
+  const a_id_map = {};
+  const a_seme_ids = new Set(Object.values(A_lat.inner_ids));
+
+  for (const c of A_lat.concepts) {
+    if (a_seme_ids.has(c.id)) continue;
+    const newId = `A:${c.id}`;
+    const newC = Object.assign({}, c, {
+      id: newId,
+      layer: 1,
+      origin: 'A',
+    });
+    if (c.id === A_lat.bottom_id) newC.role = 'shared_bottom';
+    else if (c.id === A_lat.top_id) newC.role = 'architectonic_top';
+    else newC.role = 'layer_1_internal';
+    concepts.push(newC);
+    a_id_map[c.id] = newId;
+  }
+
+  const b_id_maps = {};
+  const interface_map = {};
+
+  for (const seme_key of ['S1','S2','~S1','~S2']) {
+    const B = B_lats[seme_key];
+    b_id_maps[seme_key] = {};
+    for (const c of B.concepts) {
+      if (c.id === B.bottom_id) continue;
+      const newId = `${seme_key}:${c.id}`;
+      const newC = Object.assign({}, c, {
+        id: newId,
+        layer: 2,
+        origin: seme_key,
+      });
+      if (c.id === B.top_id) {
+        newC.role = 'interface';
+        newC.name = `Fully-articulated ${layer_2[seme_key].parent_term}`;
+        newC.short = layer_2[seme_key].parent_term;
+        newC.label = `${layer_2[seme_key].parent_term}*`;
+      } else {
+        newC.role = 'layer_2_internal';
+      }
+      concepts.push(newC);
+      b_id_maps[seme_key][c.id] = newId;
+    }
+    interface_map[seme_key] = b_id_maps[seme_key][B.top_id];
+  }
+
+  // A's edges
+  const a_seme_id_to_key = {};
+  for (const [term, oldId] of Object.entries(A_lat.inner_ids)) {
+    for (const k of ['S1','S2','~S1','~S2']) {
+      if (layer_1.square[k] === term) {
+        a_seme_id_to_key[oldId] = k;
+        break;
+      }
+    }
+  }
+
+  for (const [from, to] of A_lat.edges) {
+    if (a_seme_ids.has(from) || a_seme_ids.has(to)) continue;
+    edges.push([a_id_map[from], a_id_map[to]]);
+  }
+  for (const [from, to] of A_lat.edges) {
+    if (a_seme_ids.has(to)) {
+      const k = a_seme_id_to_key[to];
+      edges.push([a_id_map[from], interface_map[k]]);
+    }
+  }
+
+  // B edges
+  for (const seme_key of ['S1','S2','~S1','~S2']) {
+    const B = B_lats[seme_key];
+    for (const [from, to] of B.edges) {
+      if (to === B.bottom_id) {
+        if (from === B.top_id) continue;
+        edges.push([b_id_maps[seme_key][from], a_id_map[A_lat.bottom_id]]);
+      } else if (from === B.bottom_id) {
+        continue;
+      } else {
+        edges.push([b_id_maps[seme_key][from], b_id_maps[seme_key][to]]);
+      }
+    }
+  }
+
+  return { concepts, edges };
+}
+
+function buildSingleSquareLattice(square) {
+  const s1 = square.S1, s2 = square.S2;
+  const ns2 = square['~S2'], ns1 = square['~S1'];
+  const m11 = square.M11, m12 = square.M12, m13 = square.M13, m14 = square.M14;
+  const m21 = square.M21, m22 = square.M22, m23 = square.M23, m24 = square.M24;
+  const mix1 = square.Mixed1, mix2 = square.Mixed2;
+
+  const inner = [s1, s2, ns2, ns1];
+  const m2_terms = [m21, m22, m23, m24];
+  const m2_extents = {
+    [m21]: [s1, s2, ns2],
+    [m22]: [s1, s2, ns1],
+    [m23]: [ns1, ns2, s1],
+    [m24]: [ns1, ns2, s2],
+  };
+  const inner_intents = {};
+  inner.forEach(t => inner_intents[t] = []);
+  for (const [m2, ext] of Object.entries(m2_extents)) {
+    ext.forEach(t => inner_intents[t].push(m2));
+  }
+
+  const m1_terms = [m11, m12, m13, m14];
+  const m1_extents = {
+    [m11]: [s1, s2], [m12]: [ns1, ns2],
+    [m13]: [s1, ns2], [m14]: [s2, ns1],
+  };
+  const m1_intents = {};
+  m1_terms.forEach(t => m1_intents[t] = []);
+  for (const [m1, ext] of Object.entries(m1_extents)) {
+    for (const [m2, m2ext] of Object.entries(m2_extents)) {
+      if (ext.every(t => m2ext.includes(t))) m1_intents[m1].push(m2);
+    }
+  }
+
+  const mixed_extents = { [mix1]: [s1, ns1], [mix2]: [s2, ns2] };
+  const mixed_intents = { [mix1]: [], [mix2]: [] };
+  for (const [mix, ext] of Object.entries(mixed_extents)) {
+    for (const [m2, m2ext] of Object.entries(m2_extents)) {
+      if (ext.every(t => m2ext.includes(t))) mixed_intents[mix].push(m2);
+    }
+  }
+
+  const concepts = [];
+  let cid = 0;
+  function add(label, short, name, extent, intent) {
+    concepts.push({ id: cid, label, short, name, extent, intent });
+    return cid++;
+  }
+
+  const bottom_id = add("bottom", "Bottom",
+    "Bottom — empty extent, all four M2 attributes",
+    [], m2_terms.slice());
+
+  const inner_ids = {};
+  const inner_short = { [s1]: "S1", [s2]: "S2", [ns2]: "~S2", [ns1]: "~S1" };
+  for (const t of inner) {
+    inner_ids[t] = add(t, inner_short[t],
+      `${t} — inner term ${inner_short[t]}`,
+      [t], inner_intents[t].slice());
+  }
+
+  const pair_ids = {};
+  for (const t of m1_terms) {
+    pair_ids[t] = add(t, `M1:${t}`,
+      `${t} — M1 meta-term of ${m1_extents[t].join(', ')}`,
+      m1_extents[t].slice(), m1_intents[t].slice());
+  }
+  for (const t of [mix1, mix2]) {
+    pair_ids[t] = add(t, `Mix:${t}`,
+      `${t} — mixed term of ${mixed_extents[t].join(', ')}`,
+      mixed_extents[t].slice(), mixed_intents[t].slice());
+  }
+
+  const m2_ids = {};
+  for (const t of m2_terms) {
+    m2_ids[t] = add(t, `M2:${t}`,
+      `${t} — M2 meta-term containing ${m2_extents[t].join(', ')}`,
+      m2_extents[t].slice(), [t]);
+  }
+
+  const top_id = add("top", "Top",
+    "Top — all inner terms, no shared attribute",
+    inner.slice(), []);
+
+  const edges = [];
+  for (const t of m2_terms) edges.push([top_id, m2_ids[t]]);
+  for (const [m2, ext] of Object.entries(m2_extents)) {
+    for (const [pair, pext] of [...Object.entries(m1_extents), ...Object.entries(mixed_extents)]) {
+      if (pext.every(t => ext.includes(t))) edges.push([m2_ids[m2], pair_ids[pair]]);
+    }
+  }
+  for (const [pair, ext] of [...Object.entries(m1_extents), ...Object.entries(mixed_extents)]) {
+    for (const t of ext) edges.push([pair_ids[pair], inner_ids[t]]);
+  }
+  for (const t of inner) edges.push([inner_ids[t], bottom_id]);
+
+  return { concepts, edges, inner_ids, top_id, bottom_id };
+}
+
+// =========================================================
+// INIT
 // =========================================================
 
 document.addEventListener('click', () => {
-  if (getPinned() !== null) {
+  if (getPinned() !== null && getPinned() !== undefined) {
     setPinned(null);
     if (state.hoverId !== null) applyState(state.hoverId);
     else clearAll();
     renderPanel();
-    updateGreimas();
   }
 });
 
@@ -1426,12 +1727,17 @@ document.getElementById('json-update-btn').addEventListener('click', (ev) => {
   handleJsonUpdate();
 });
 
-// =========================================================
-// INIT
-// =========================================================
+// Build demo dataset
+(function init() {
+  const demo = buildDemoArchitectonic();
+  const processed = processDataset(demo);
+  state.datasets.architectonic = processed;
+  state.pinnedByDataset.architectonic = null;
 
-buildTabs();
-switchTo('planets');
+  buildTabs();
+  switchTo('architectonic');
+})();
+
 </script>
 </body>
 </html>
