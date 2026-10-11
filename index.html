@@ -112,6 +112,16 @@
     0%, 100% { stroke-opacity: .55; } 50% { stroke-opacity: 1; }
   }
 
+  /* X marker inside lattice nodes with no Greimas counterpart */
+  .greimas-x {
+    display: none;
+    pointer-events: none;
+    stroke: #1a1a1a;
+    stroke-width: 2.6;
+    stroke-linecap: round;
+  }
+  .node.hovered.no-greimas .greimas-x { display: block; }
+
   /* --- Greimas square styles --- */
   .greimas-node { cursor: default; }
   .greimas-node .greimas-pin-ring {
@@ -159,6 +169,18 @@
   .section-title.first { border-top: none; padding-top: 0; margin-top: 0; }
   .kv { margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
   .kv .k { color: var(--text-dim); }
+  .bullet {
+    padding-left: 14px; position: relative; font-size: 12.5px;
+    line-height: 1.5; margin-bottom: 6px; color: #d4d8e8;
+  }
+  .bullet::before {
+    content: '•'; position: absolute; left: 2px;
+    color: var(--text-dim);
+  }
+  .relation-key { color: var(--anc); font-weight: 600; }
+  .relation-key.contr { color: #ff8c42; }
+  .relation-key.contra { color: #e63946; }
+  .relation-key.impl { color: #5b9bd5; }
   .chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
   .chip {
     display: inline-block; padding: 2px 9px; border-radius: 10px;
@@ -239,48 +261,30 @@ const DATASETS = {
     padX: 100, padY: 90, nodeR: 26, labelLines: false,
     scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42, maxExt: 6, maxInt: 6 },
     concepts: [
-      { id: 0, label: '⊥', short: 'Bottom',
-        name: 'Bottom — empty extent, all attributes',
-        extent: [],
-        intent: ['Is a planet','Is small','Is large','Has no moons','Has moons','Is far from sun'],
+      { id: 0, label: '⊥', short: 'Bottom', name: 'Bottom — empty extent, all attributes',
+        extent: [], intent: ['Is a planet','Is small','Is large','Has no moons','Has moons','Is far from sun'],
         x: 0.50, y: 0.04 },
-      { id: 1, label: 'Small · no moons', short: 'Sm·NM',
-        name: 'Small planets without moons',
-        extent: ['Mercury','Venus'],
-        intent: ['Is a planet','Is small','Has no moons'],
+      { id: 1, label: 'Small · no moons', short: 'Sm·NM', name: 'Small planets without moons',
+        extent: ['Mercury','Venus'], intent: ['Is a planet','Is small','Has no moons'],
         x: 0.14, y: 0.30 },
-      { id: 2, label: 'Small · has moons', short: 'Sm·HM',
-        name: 'Small planets with moons',
-        extent: ['Earth','Mars'],
-        intent: ['Is a planet','Is small','Has moons'],
+      { id: 2, label: 'Small · has moons', short: 'Sm·HM', name: 'Small planets with moons',
+        extent: ['Earth','Mars'], intent: ['Is a planet','Is small','Has moons'],
         x: 0.50, y: 0.30 },
-      { id: 3, label: 'Large · moons · far', short: 'Lg·HM·FS',
-        name: 'Large planets with moons, far from sun',
-        extent: ['Jupiter','Saturn'],
-        intent: ['Is a planet','Is large','Has moons','Is far from sun'],
+      { id: 3, label: 'Large · moons · far', short: 'Lg·HM·FS', name: 'Large planets with moons, far from sun',
+        extent: ['Jupiter','Saturn'], intent: ['Is a planet','Is large','Has moons','Is far from sun'],
         x: 0.86, y: 0.30 },
-      { id: 4, label: 'Small', short: 'Small',
-        name: 'All small planets',
-        extent: ['Mercury','Venus','Earth','Mars'],
-        intent: ['Is a planet','Is small'],
+      { id: 4, label: 'Small', short: 'Small', name: 'All small planets',
+        extent: ['Mercury','Venus','Earth','Mars'], intent: ['Is a planet','Is small'],
         x: 0.28, y: 0.56 },
-      { id: 5, label: 'Has moons', short: 'Moons',
-        name: 'All planets with moons',
-        extent: ['Earth','Mars','Jupiter','Saturn'],
-        intent: ['Is a planet','Has moons'],
+      { id: 5, label: 'Has moons', short: 'Moons', name: 'All planets with moons',
+        extent: ['Earth','Mars','Jupiter','Saturn'], intent: ['Is a planet','Has moons'],
         x: 0.72, y: 0.56 },
-      { id: 6, label: '⊤', short: 'Top',
-        name: 'Top — all planets, shared attribute only',
-        extent: ['Mercury','Venus','Earth','Mars','Jupiter','Saturn'],
-        intent: ['Is a planet'],
+      { id: 6, label: '⊤', short: 'Top', name: 'Top — all planets, shared attribute only',
+        extent: ['Mercury','Venus','Earth','Mars','Jupiter','Saturn'], intent: ['Is a planet'],
         x: 0.50, y: 0.82 }
     ],
     edges: [
-      [0,1],[0,2],[0,3],
-      [1,4],
-      [2,4],[2,5],
-      [3,5],
-      [4,6],[5,6]
+      [0,1],[0,2],[0,3],[1,4],[2,4],[2,5],[3,5],[4,6],[5,6]
     ]
   },
 
@@ -291,8 +295,7 @@ const DATASETS = {
     padX: 70, padY: 80, nodeR: 22, labelLines: true,
     scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42, maxExt: 15, maxInt: 4 },
     concepts: [
-      { id: 0, label: 'Full · freedom', short: 'FF',
-        name: 'Full freedom — all four attributes present',
+      { id: 0, label: 'Full · freedom', short: 'FF', name: 'Full freedom — all four attributes present',
         extent: ['Full freedom'],
         intent: ['Non-interference','Available options','Effective agency','Authenticity'],
         x: 0.50, y: 0.06 },
@@ -350,47 +353,35 @@ const DATASETS = {
         name: 'Non-interference — negative liberty as such',
         extent: ['Mere non-interference','Formal liberty','Inner freedom','Authentic NI',
                  'Republican liberty','Autonomous liberty','Self-authored inner freedom','Full freedom'],
-        intent: ['Non-interference'],
-        x: 0.10, y: 0.76 },
+        intent: ['Non-interference'], x: 0.10, y: 0.76 },
       { id: 12, label: 'Available · options', short: 'AO',
         name: 'Available options — the opportunity component',
         extent: ['Options without liberty','Formal liberty','Capability','Authentic choice',
                  'Republican liberty','Autonomous liberty','Empowered autonomy','Full freedom'],
-        intent: ['Available options'],
-        x: 0.35, y: 0.76 },
+        intent: ['Available options'], x: 0.35, y: 0.76 },
       { id: 13, label: 'Effective · agency', short: 'EA',
         name: 'Effective agency — the capability component',
         extent: ['Bare capacity','Inner freedom','Capability','Authentic agency',
                  'Republican liberty','Self-authored inner freedom','Empowered autonomy','Full freedom'],
-        intent: ['Effective agency'],
-        x: 0.65, y: 0.76 },
+        intent: ['Effective agency'], x: 0.65, y: 0.76 },
       { id: 14, label: 'Authenticity', short: 'AU',
         name: 'Authenticity — the self-authorship component',
         extent: ['Authentic but unfree','Authentic NI','Authentic choice','Authentic agency',
                  'Autonomous liberty','Self-authored inner freedom','Empowered autonomy','Full freedom'],
-        intent: ['Authenticity'],
-        x: 0.90, y: 0.76 },
-      { id: 15, label: 'Freedom', short: 'Freedom',
-        name: 'Freedom as such — the most general concept',
+        intent: ['Authenticity'], x: 0.90, y: 0.76 },
+      { id: 15, label: 'Freedom', short: 'Freedom', name: 'Freedom as such — the most general concept',
         extent: ['Mere non-interference','Options without liberty','Bare capacity','Authentic but unfree',
                  'Formal liberty','Inner freedom','Authentic NI','Capability','Authentic choice',
                  'Authentic agency','Republican liberty','Autonomous liberty',
                  'Self-authored inner freedom','Empowered autonomy','Full freedom'],
-        intent: [],
-        x: 0.50, y: 0.96 }
+        intent: [], x: 0.50, y: 0.96 }
     ],
     edges: [
       [15, 11], [15, 12], [15, 13], [15, 14],
-      [11, 5], [11, 6], [11, 7],
-      [12, 5], [12, 8], [12, 9],
-      [13, 6], [13, 8], [13, 10],
-      [14, 7], [14, 9], [14, 10],
-      [5, 1], [5, 2],
-      [6, 1], [6, 3],
-      [7, 2], [7, 3],
-      [8, 1], [8, 4],
-      [9, 2], [9, 4],
-      [10, 3], [10, 4],
+      [11, 5], [11, 6], [11, 7], [12, 5], [12, 8], [12, 9],
+      [13, 6], [13, 8], [13, 10], [14, 7], [14, 9], [14, 10],
+      [5, 1], [5, 2], [6, 1], [6, 3], [7, 2], [7, 3],
+      [8, 1], [8, 4], [9, 2], [9, 4], [10, 3], [10, 4],
       [1, 0], [2, 0], [3, 0], [4, 0]
     ]
   },
@@ -402,105 +393,75 @@ const DATASETS = {
     padX: 70, padY: 80, nodeR: 24, labelLines: true,
     scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42, maxExt: 4, maxInt: 4 },
     concepts: [
-      { id: 0, label: '⊥', short: 'Bottom',
-        name: 'Bottom — empty extent, all four M₂ attributes',
-        extent: [],
-        intent: ['Expressed','Grounded','Unspoken','Uncommitted'],
+      { id: 0, label: '⊥', short: 'Bottom', name: 'Bottom — empty extent, all four M₂ attributes',
+        extent: [], intent: ['Expressed','Grounded','Unspoken','Uncommitted'],
         x: 0.50, y: 0.06 },
-      { id: 1, label: 'Meaning', short: 'M',
-        name: 'Meaning — the inner term S1',
-        extent: ['Meaning'],
-        intent: ['Expressed','Grounded','Unspoken'],
+      { id: 1, label: 'Meaning', short: 'M', name: 'Meaning — the inner term S1',
+        extent: ['Meaning'], intent: ['Expressed','Grounded','Unspoken'],
         x: 0.18, y: 0.30 },
-      { id: 2, label: 'Saying', short: 'S',
-        name: 'Saying — the inner term S2',
-        extent: ['Saying'],
-        intent: ['Expressed','Grounded','Uncommitted'],
+      { id: 2, label: 'Saying', short: 'S', name: 'Saying — the inner term S2',
+        extent: ['Saying'], intent: ['Expressed','Grounded','Uncommitted'],
         x: 0.40, y: 0.30 },
-      { id: 3, label: 'Non-meaning', short: 'NM',
-        name: 'Non-meaning — the inner term ~S1',
-        extent: ['Non-meaning'],
-        intent: ['Expressed','Unspoken','Uncommitted'],
+      { id: 3, label: 'Non-meaning', short: 'NM', name: 'Non-meaning — the inner term ~S1',
+        extent: ['Non-meaning'], intent: ['Expressed','Unspoken','Uncommitted'],
         x: 0.60, y: 0.30 },
-      { id: 4, label: 'Non-saying', short: 'NS',
-        name: 'Non-saying — the inner term ~S2',
-        extent: ['Non-saying'],
-        intent: ['Grounded','Unspoken','Uncommitted'],
+      { id: 4, label: 'Non-saying', short: 'NS', name: 'Non-saying — the inner term ~S2',
+        extent: ['Non-saying'], intent: ['Grounded','Unspoken','Uncommitted'],
         x: 0.82, y: 0.30 },
       { id: 5, label: 'Sincere · speech', short: 'SS',
         name: 'Sincere speech — meaning and saying together (M₁ term)',
-        extent: ['Meaning','Saying'],
-        intent: ['Expressed','Grounded'],
+        extent: ['Meaning','Saying'], intent: ['Expressed','Grounded'],
         x: 0.10, y: 0.52 },
       { id: 6, label: 'Mixed · meaning', short: 'MM',
         name: 'Mixed meaning — meaning and non-meaning together',
-        extent: ['Meaning','Non-meaning'],
-        intent: ['Expressed','Unspoken'],
+        extent: ['Meaning','Non-meaning'], intent: ['Expressed','Unspoken'],
         x: 0.24, y: 0.52 },
       { id: 7, label: 'Tacit · meaning', short: 'TM',
         name: 'Tacit meaning — meaning without saying (M₁ term)',
-        extent: ['Meaning','Non-saying'],
-        intent: ['Grounded','Unspoken'],
+        extent: ['Meaning','Non-saying'], intent: ['Grounded','Unspoken'],
         x: 0.40, y: 0.52 },
       { id: 8, label: 'Empty · speech', short: 'ES',
         name: 'Empty speech — saying without meaning (M₁ term)',
-        extent: ['Saying','Non-meaning'],
-        intent: ['Expressed','Uncommitted'],
+        extent: ['Saying','Non-meaning'], intent: ['Expressed','Uncommitted'],
         x: 0.56, y: 0.52 },
       { id: 9, label: 'Mixed · saying', short: 'MS',
         name: 'Mixed saying — saying and non-saying together',
-        extent: ['Saying','Non-saying'],
-        intent: ['Grounded','Uncommitted'],
+        extent: ['Saying','Non-saying'], intent: ['Grounded','Uncommitted'],
         x: 0.72, y: 0.52 },
       { id: 10, label: 'Silence', short: 'Sil',
         name: 'Silence — neither meaning nor saying (M₁ term)',
-        extent: ['Non-meaning','Non-saying'],
-        intent: ['Unspoken','Uncommitted'],
+        extent: ['Non-meaning','Non-saying'], intent: ['Unspoken','Uncommitted'],
         x: 0.90, y: 0.52 },
       { id: 11, label: 'Expressed', short: 'R',
         name: 'Expressed — the M₂ term omitting non-saying',
-        extent: ['Meaning','Saying','Non-meaning'],
-        intent: ['Expressed'],
+        extent: ['Meaning','Saying','Non-meaning'], intent: ['Expressed'],
         x: 0.10, y: 0.76 },
       { id: 12, label: 'Grounded', short: 'P',
         name: 'Grounded — the M₂ term omitting non-meaning',
-        extent: ['Meaning','Saying','Non-saying'],
-        intent: ['Grounded'],
+        extent: ['Meaning','Saying','Non-saying'], intent: ['Grounded'],
         x: 0.35, y: 0.76 },
       { id: 13, label: 'Unspoken', short: 'U',
         name: 'Unspoken — the M₂ term omitting saying',
-        extent: ['Meaning','Non-meaning','Non-saying'],
-        intent: ['Unspoken'],
+        extent: ['Meaning','Non-meaning','Non-saying'], intent: ['Unspoken'],
         x: 0.65, y: 0.76 },
       { id: 14, label: 'Uncommitted', short: 'D',
         name: 'Uncommitted — the M₂ term omitting meaning',
-        extent: ['Saying','Non-meaning','Non-saying'],
-        intent: ['Uncommitted'],
+        extent: ['Saying','Non-meaning','Non-saying'], intent: ['Uncommitted'],
         x: 0.90, y: 0.76 },
-      { id: 15, label: '⊤', short: 'Top',
-        name: 'Top — all inner terms, no shared attribute',
-        extent: ['Meaning','Saying','Non-meaning','Non-saying'],
-        intent: [],
+      { id: 15, label: '⊤', short: 'Top', name: 'Top — all inner terms, no shared attribute',
+        extent: ['Meaning','Saying','Non-meaning','Non-saying'], intent: [],
         x: 0.50, y: 0.96 }
     ],
     edges: [
       [15, 11], [15, 12], [15, 13], [15, 14],
-      [11, 5], [11, 6], [11, 8],
-      [12, 5], [12, 7], [12, 9],
-      [13, 6], [13, 7], [13, 10],
-      [14, 8], [14, 9], [14, 10],
-      [5, 1], [5, 2],
-      [6, 1], [6, 3],
-      [7, 1], [7, 4],
-      [8, 2], [8, 3],
-      [9, 2], [9, 4],
-      [10, 3], [10, 4],
+      [11, 5], [11, 6], [11, 8], [12, 5], [12, 7], [12, 9],
+      [13, 6], [13, 7], [13, 10], [14, 8], [14, 9], [14, 10],
+      [5, 1], [5, 2], [6, 1], [6, 3], [7, 1], [7, 4],
+      [8, 2], [8, 3], [9, 2], [9, 4], [10, 3], [10, 4],
       [1, 0], [2, 0], [3, 0], [4, 0]
     ],
-    // --- Greimas square configuration ---
     greimas: {
       viewBox: { w: 620, h: 520 },
-      // Lattice concept id → Greimas node key
       mapping: {
         1: 'meaning',        2: 'saying',
         3: 'non-meaning',    4: 'non-saying',
@@ -524,14 +485,12 @@ const DATASETS = {
         'uncommitted':    { x: 550, y: 470, label: 'Uncommitted',    tier: 'm2',    labelPos: 'above' }
       },
       edges: [
-        // Inner square
         ['meaning', 'saying',        'inner'],
         ['non-saying', 'non-meaning','inner'],
         ['meaning', 'non-meaning',   'inner'],
         ['saying', 'non-saying',     'inner'],
         ['meaning', 'non-saying',    'inner'],
         ['saying', 'non-meaning',    'inner'],
-        // Inner to M1
         ['meaning', 'sincere-speech',     'inner-m1'],
         ['saying', 'sincere-speech',      'inner-m1'],
         ['meaning', 'tacit-meaning',      'inner-m1'],
@@ -540,7 +499,6 @@ const DATASETS = {
         ['non-meaning', 'empty-speech',   'inner-m1'],
         ['non-saying', 'silence',         'inner-m1'],
         ['non-meaning', 'silence',        'inner-m1'],
-        // M1 to M2
         ['sincere-speech', 'grounded',    'm1-m2'],
         ['sincere-speech', 'expressed',   'm1-m2'],
         ['tacit-meaning', 'grounded',     'm1-m2'],
@@ -550,6 +508,108 @@ const DATASETS = {
         ['silence', 'unspoken',           'm1-m2'],
         ['silence', 'uncommitted',        'm1-m2']
       ]
+    },
+    greimasInfo: {
+      'meaning': {
+        type: 'Inner term — S1 (positive pole)',
+        fulfill: [
+          'Contrary to Saying: both can hold together (sincere speech), both can fail together (silence), or either can hold alone (tacit meaning, empty speech).',
+          'Contradictory to Non-meaning: every semiotic act either carries intended content or it does not. Exactly one of the pair holds.',
+          'Implied by Non-saying: an act with no utterance still carries intended content. Silent intent is meaningful.'
+        ],
+        relations: [
+          'Contrary: <span class="relation-key contr">Saying</span>',
+          'Contradictory: <span class="relation-key contra">Non-meaning</span>',
+          'Implied by: <span class="relation-key impl">Non-saying</span> (Non-saying → Meaning)'
+        ]
+      },
+      'saying': {
+        type: 'Inner term — S2 (positive pole)',
+        fulfill: [
+          'Contrary to Meaning: both can hold together (sincere speech), both can fail together (silence), or either alone.',
+          'Contradictory to Non-saying: every act either involves an utterance or it does not. Exactly one holds.',
+          'Implied by Non-meaning: an act without intended content still involves an utterance. Empty speech is still speech.'
+        ],
+        relations: [
+          'Contrary: <span class="relation-key contr">Meaning</span>',
+          'Contradictory: <span class="relation-key contra">Non-saying</span>',
+          'Implied by: <span class="relation-key impl">Non-meaning</span> (Non-meaning → Saying)'
+        ]
+      },
+      'non-meaning': {
+        type: 'Inner term — ~S1 (contradictory of S1)',
+        fulfill: [
+          'Contradictory to Meaning: exactly one of the pair holds for any act.',
+          'Contrary to Non-saying: the two negative poles can hold together (silence), both fail (sincere speech), or either alone.',
+          'Implies Saying: every act with no intended content still involves an utterance.'
+        ],
+        relations: [
+          'Contradictory: <span class="relation-key contra">Meaning</span>',
+          'Contrary: <span class="relation-key contr">Non-saying</span>',
+          'Implies: <span class="relation-key impl">Saying</span> (Non-meaning → Saying)'
+        ]
+      },
+      'non-saying': {
+        type: 'Inner term — ~S2 (contradictory of S2)',
+        fulfill: [
+          'Contradictory to Saying: exactly one of the pair holds.',
+          'Contrary to Non-meaning: the two negative poles can hold together, both fail, or either alone.',
+          'Implies Meaning: an act with no utterance still carries intended content.'
+        ],
+        relations: [
+          'Contradictory: <span class="relation-key contra">Saying</span>',
+          'Contrary: <span class="relation-key contr">Non-meaning</span>',
+          'Implies: <span class="relation-key impl">Meaning</span> (Non-saying → Meaning)'
+        ]
+      },
+      'sincere-speech': {
+        type: 'Meta-term — Complex axis (S = S1 + S2)',
+        fulfill: [],
+        relations: [],
+        note: 'Not an inner term. It is the join of the two positive poles. Contrariety, contradictoriness, and implication apply to its inner components, not to it directly. Composition: Meaning + Saying.'
+      },
+      'silence': {
+        type: 'Meta-term — Neutral axis (~S = ~S1 + ~S2)',
+        fulfill: [],
+        relations: [],
+        note: 'Not an inner term. It is the join of the two negative poles. Contrariety, contradictoriness, and implication apply to its inner components, not to it directly. Composition: Non-meaning + Non-saying.'
+      },
+      'tacit-meaning': {
+        type: 'Meta-term — Positive deixis (S1 + ~S2)',
+        fulfill: [],
+        relations: [],
+        note: 'Not an inner term. This is the pair connected by the implication Non-saying → Meaning. It combines the implied with its implier. Composition: Meaning + Non-saying.'
+      },
+      'empty-speech': {
+        type: 'Meta-term — Negative deixis (S2 + ~S1)',
+        fulfill: [],
+        relations: [],
+        note: 'Not an inner term. This is the pair connected by the implication Non-meaning → Saying. Composition: Saying + Non-meaning.'
+      },
+      'expressed': {
+        type: 'Second-tier meta-term (M₂) — omits Non-saying',
+        fulfill: [],
+        relations: [],
+        note: 'Not an inner term, and not even a first-tier meta-term. It contains three of the four inner terms and misses exactly one. Contrariety, contradictoriness, and implication apply to its components, not to it. Composition: Meaning + Saying + Non-meaning.'
+      },
+      'grounded': {
+        type: 'Second-tier meta-term (M₂) — omits Non-meaning',
+        fulfill: [],
+        relations: [],
+        note: 'Contains three of four inner terms. Composition: Meaning + Saying + Non-saying.'
+      },
+      'unspoken': {
+        type: 'Second-tier meta-term (M₂) — omits Saying',
+        fulfill: [],
+        relations: [],
+        note: 'Contains three of four inner terms. Composition: Meaning + Non-meaning + Non-saying.'
+      },
+      'uncommitted': {
+        type: 'Second-tier meta-term (M₂) — omits Meaning',
+        fulfill: [],
+        relations: [],
+        note: 'Contains three of four inner terms. Composition: Saying + Non-meaning + Non-saying.'
+      }
     }
   },
 
@@ -560,30 +620,23 @@ const DATASETS = {
     padX: 100, padY: 100, nodeR: 26, labelLines: false,
     scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42, maxExt: 4, maxInt: 2 },
     concepts: [
-      { id: 0, label: '⊥', short: 'Bottom',
-        name: 'Bottom — no scenario, both attributes',
-        extent: [],
-        intent: ['Non-interference','Available options'],
+      { id: 0, label: '⊥', short: 'Bottom', name: 'Bottom — no scenario, both attributes',
+        extent: [], intent: ['Non-interference','Available options'],
         x: 0.50, y: 0.06 },
       { id: 1, label: 'Non-interference', short: 'NI',
         name: 'Non-interference — left alone, but no alternatives',
-        extent: ['No alternatives','Free citizen'],
-        intent: ['Non-interference'],
+        extent: ['No alternatives','Free citizen'], intent: ['Non-interference'],
         x: 0.20, y: 0.50 },
       { id: 2, label: 'Available options', short: 'AO',
         name: 'Available options — under coercion, but with choices',
-        extent: ['Coerced chooser','Free citizen'],
-        intent: ['Available options'],
+        extent: ['Coerced chooser','Free citizen'], intent: ['Available options'],
         x: 0.80, y: 0.50 },
-      { id: 3, label: '⊤', short: 'Top',
-        name: 'Top — all scenarios, no shared attribute',
+      { id: 3, label: '⊤', short: 'Top', name: 'Top — all scenarios, no shared attribute',
         extent: ['No alternatives','Coerced chooser','Free citizen','Trapped'],
-        intent: [],
-        x: 0.50, y: 0.94 }
+        intent: [], x: 0.50, y: 0.94 }
     ],
     edges: [
-      [0, 1], [0, 2],
-      [1, 3], [2, 3]
+      [0, 1], [0, 2], [1, 3], [2, 3]
     ]
   }
 
@@ -708,6 +761,13 @@ function buildLattice() {
     g.setAttribute('class', 'node');
     g.dataset.id = i;
 
+    // Determine Greimas mapping (only when dataset has a Greimas config)
+    const hasGreimas = !!D.greimas;
+    const hasMapping = hasGreimas && D.greimas.mapping[i] !== undefined;
+    if (hasGreimas && !hasMapping) {
+      g.classList.add('no-greimas');
+    }
+
     const pinRing = document.createElementNS(svgNS, 'circle');
     pinRing.setAttribute('cx', px[i].x);
     pinRing.setAttribute('cy', px[i].y);
@@ -720,6 +780,26 @@ function buildLattice() {
     circle.setAttribute('cy', px[i].y);
     circle.setAttribute('r', NODE_R);
     g.appendChild(circle);
+
+    // X marker (only shown when node is hovered/pinned AND has no Greimas mapping)
+    if (hasGreimas && !hasMapping) {
+      const xSize = NODE_R * 0.46;
+      const x1 = document.createElementNS(svgNS, 'line');
+      x1.setAttribute('x1', px[i].x - xSize);
+      x1.setAttribute('y1', px[i].y - xSize);
+      x1.setAttribute('x2', px[i].x + xSize);
+      x1.setAttribute('y2', px[i].y + xSize);
+      x1.setAttribute('class', 'greimas-x');
+      g.appendChild(x1);
+
+      const x2 = document.createElementNS(svgNS, 'line');
+      x2.setAttribute('x1', px[i].x + xSize);
+      x2.setAttribute('y1', px[i].y - xSize);
+      x2.setAttribute('x2', px[i].x - xSize);
+      x2.setAttribute('y2', px[i].y + xSize);
+      x2.setAttribute('class', 'greimas-x');
+      g.appendChild(x2);
+    }
 
     const lines = D.labelLines ? c.label.split(' · ') : [c.label];
     lines.forEach((ln, k) => {
@@ -762,7 +842,6 @@ function buildGreimas() {
   const G = D.greimas;
   svg.setAttribute('viewBox', `0 0 ${G.viewBox.w} ${G.viewBox.h}`);
 
-  // --- Edges (drawn first, behind nodes) ---
   G.edges.forEach(([a, b, kind]) => {
     const na = G.nodes[a], nb = G.nodes[b];
     const line = document.createElementNS(svgNS, 'line');
@@ -786,7 +865,6 @@ function buildGreimas() {
     svg.appendChild(line);
   });
 
-  // --- Nodes ---
   Object.entries(G.nodes).forEach(([key, node]) => {
     const g = document.createElementNS(svgNS, 'g');
     g.setAttribute('class', 'greimas-node');
@@ -797,7 +875,6 @@ function buildGreimas() {
     if (node.tier === 'm1') { fill = '#5b9bd5'; radius = 14; }
     else if (node.tier === 'm2') { fill = '#3fa34d'; radius = 12; }
 
-    // Pin ring (hidden by default, shown on highlight)
     const pinRing = document.createElementNS(svgNS, 'circle');
     pinRing.setAttribute('cx', node.x);
     pinRing.setAttribute('cy', node.y);
@@ -814,7 +891,6 @@ function buildGreimas() {
     circle.setAttribute('stroke-width', '1.5');
     g.appendChild(circle);
 
-    // Label
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('fill', '#c8cde0');
     t.style.fontSize = '11px';
@@ -836,7 +912,7 @@ function buildGreimas() {
       t.setAttribute('x', node.x - radius - gap);
       t.setAttribute('y', node.y + 4);
       t.setAttribute('text-anchor', 'end');
-    } else { // right
+    } else {
       t.setAttribute('x', node.x + radius + gap);
       t.setAttribute('y', node.y + 4);
       t.setAttribute('text-anchor', 'start');
@@ -848,9 +924,8 @@ function buildGreimas() {
     state.greimasNodeElsByKey[key] = g;
   });
 
-  hint.textContent = 'Click a lattice node to highlight its counterpart. Concepts not shown here have no counterpart in the square.';
+  hint.textContent = 'Click a lattice node to highlight its counterpart. Nodes marked with an X in the lattice have no counterpart here.';
 
-  // Sync current pinned state
   updateGreimas();
 }
 
@@ -1207,12 +1282,36 @@ function updatePanel(i) {
     ? `<div class="chips">${chipList(c.intent, 'attr')}</div>`
     : `<div class="hint" style="font-size:12px;">∅ — nothing shared</div>`;
 
-  // Greimas correspondence, if any
-  if (D.greimas && D.greimas.mapping[i] !== undefined) {
+  // --- Greimas square info ---
+  if (D.greimas) {
     const gKey = D.greimas.mapping[i];
-    const gNode = D.greimas.nodes[gKey];
-    html += `<div class="section-title">Greimas Square</div>`;
-    html += `<div class="kv">Corresponds to <span class="chip self">${gNode.label}</span> in the Greimas square below.</div>`;
+    if (gKey !== undefined) {
+      const gNode = D.greimas.nodes[gKey];
+      const info = D.greimasInfo ? D.greimasInfo[gKey] : null;
+      html += `<div class="section-title">Greimas Square</div>`;
+      html += `<div class="kv">Corresponds to <span class="chip self">${gNode.label}</span> in the Greimas square below.</div>`;
+      if (info) {
+        html += `<div class="kv" style="margin-top:8px;"><span class="k">${info.type}</span></div>`;
+        if (info.fulfill && info.fulfill.length) {
+          html += `<div class="kv" style="margin-top:8px;color:#b8bed4;font-weight:600;font-size:12px;">How it fulfills the requirements:</div>`;
+          info.fulfill.forEach(f => {
+            html += `<div class="bullet">${f}</div>`;
+          });
+        }
+        if (info.relations && info.relations.length) {
+          html += `<div class="kv" style="margin-top:8px;color:#b8bed4;font-weight:600;font-size:12px;">Relations:</div>`;
+          info.relations.forEach(r => {
+            html += `<div class="bullet">${r}</div>`;
+          });
+        }
+        if (info.note) {
+          html += `<div class="kv" style="margin-top:8px;color:var(--text-dim);font-size:12.5px;">${info.note}</div>`;
+        }
+      }
+    } else {
+      html += `<div class="section-title">Greimas Square</div>`;
+      html += `<div class="kv" style="color:var(--text-dim);font-size:12.5px;">This concept has no counterpart in the Greimas square. It appears in the lattice only — marked with an X when highlighted.</div>`;
+    }
   }
 
   html += `<div class="section-title">Hierarchy</div>`;
