@@ -6,24 +6,15 @@
 <title>Concept Lattice Viewer</title>
 <style>
   :root {
-    --bg: #0f1220;
-    --panel: #1a1f35;
-    --panel-2: #232a45;
-    --text: #e6e8f0;
-    --text-dim: #8a90a8;
-    --node: #5b9bd5;
-    --node-edge: #d0d8e8;
-    --hover: #ffd23f;
-    --anc: #ff8c42;
-    --desc: #e63946;
-    --edge: #4a5170;
-    --accent: #5b9bd5;
+    --bg: #0f1220; --panel: #1a1f35; --panel-2: #232a45;
+    --text: #e6e8f0; --text-dim: #8a90a8;
+    --node: #5b9bd5; --node-edge: #d0d8e8;
+    --hover: #ffd23f; --anc: #ff8c42; --desc: #e63946;
+    --edge: #4a5170; --accent: #5b9bd5;
   }
   * { box-sizing: border-box; }
   html, body {
-    margin: 0; padding: 0;
-    background: var(--bg);
-    color: var(--text);
+    margin: 0; padding: 0; background: var(--bg); color: var(--text);
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 14px; line-height: 1.5; min-height: 100vh;
   }
@@ -65,6 +56,9 @@
     background: var(--panel); border-radius: 14px; width: 100%; height: auto;
     box-shadow: 0 6px 24px rgba(0,0,0,0.35); display: block;
   }
+  #greimas {
+    background: transparent; width: 100%; height: auto; display: block;
+  }
 
   .node { cursor: pointer; }
   .node circle {
@@ -91,14 +85,11 @@
     fill: var(--desc); stroke: #ffb0b8; stroke-width: 2;
     animation: pulseNodeRed 1.9s ease-in-out infinite;
   }
-  .edge.ancestor {
-    stroke: var(--anc); stroke-width: 3;
-    animation: pulseEdgeOrange 1.9s ease-in-out infinite;
-  }
-  .edge.descendant {
-    stroke: var(--desc); stroke-width: 3;
-    animation: pulseEdgeRed 1.9s ease-in-out infinite;
-  }
+  .edge.ancestor { stroke: var(--anc); stroke-width: 3;
+    animation: pulseEdgeOrange 1.9s ease-in-out infinite; }
+  .edge.descendant { stroke: var(--desc); stroke-width: 3;
+    animation: pulseEdgeRed 1.9s ease-in-out infinite; }
+
   .node.pinned .pin-ring { display: block; }
   .pin-ring {
     display: none; fill: none; stroke: #fff; stroke-width: 2;
@@ -119,6 +110,22 @@
   }
   @keyframes pulseEdgeRed {
     0%, 100% { stroke-opacity: .55; } 50% { stroke-opacity: 1; }
+  }
+
+  /* --- Greimas square styles --- */
+  .greimas-node { cursor: default; }
+  .greimas-node .greimas-pin-ring {
+    fill: none; stroke: #fff; stroke-width: 2;
+    stroke-dasharray: 4 4; opacity: 0;
+    pointer-events: none; transition: opacity .25s;
+  }
+  .greimas-node.highlighted .greimas-pin-ring {
+    opacity: 0.95;
+    animation: rotateDash 8s linear infinite;
+  }
+  .greimas-node.highlighted circle:not(.greimas-pin-ring) {
+    stroke: #fff; stroke-width: 3;
+    filter: drop-shadow(0 0 16px rgba(255,210,63,1));
   }
 
   .card {
@@ -172,6 +179,10 @@
   .scatter-hint { color: var(--text-dim); font-size: 11.5px; margin-top: 8px; text-align: center; }
   .arrow-anc { color: var(--anc); font-weight: 700; }
   .arrow-desc { color: var(--desc); font-weight: 700; }
+  .greimas-hint {
+    color: var(--text-dim); font-size: 11.5px; margin-top: 10px;
+    text-align: center; line-height: 1.45;
+  }
 </style>
 </head>
 <body>
@@ -193,6 +204,13 @@
 <div class="container">
   <div id="lattice-wrap">
     <svg id="lattice"></svg>
+    <div class="card" id="greimas-card" style="display:none; margin-top:16px;">
+      <h2>Greimas Square</h2>
+      <svg id="greimas"></svg>
+      <div class="greimas-hint" id="greimas-hint">
+        Click a lattice node to highlight its counterpart.
+      </div>
+    </div>
   </div>
   <div id="panel">
     <div class="card" id="info-card">
@@ -384,14 +402,11 @@ const DATASETS = {
     padX: 70, padY: 80, nodeR: 24, labelLines: true,
     scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42, maxExt: 4, maxInt: 4 },
     concepts: [
-      // Bottom — empty extent, all four M₂ attributes
       { id: 0, label: '⊥', short: 'Bottom',
         name: 'Bottom — empty extent, all four M₂ attributes',
         extent: [],
         intent: ['Expressed','Grounded','Unspoken','Uncommitted'],
         x: 0.50, y: 0.06 },
-
-      // Row 1 — the four inner terms as object concepts
       { id: 1, label: 'Meaning', short: 'M',
         name: 'Meaning — the inner term S1',
         extent: ['Meaning'],
@@ -412,8 +427,6 @@ const DATASETS = {
         extent: ['Non-saying'],
         intent: ['Grounded','Unspoken','Uncommitted'],
         x: 0.82, y: 0.30 },
-
-      // Row 2 — six pair concepts
       { id: 5, label: 'Sincere · speech', short: 'SS',
         name: 'Sincere speech — meaning and saying together (M₁ term)',
         extent: ['Meaning','Saying'],
@@ -444,8 +457,6 @@ const DATASETS = {
         extent: ['Non-meaning','Non-saying'],
         intent: ['Unspoken','Uncommitted'],
         x: 0.90, y: 0.52 },
-
-      // Row 3 — the four M₂ attributes
       { id: 11, label: 'Expressed', short: 'R',
         name: 'Expressed — the M₂ term omitting non-saying',
         extent: ['Meaning','Saying','Non-meaning'],
@@ -466,8 +477,6 @@ const DATASETS = {
         extent: ['Saying','Non-meaning','Non-saying'],
         intent: ['Uncommitted'],
         x: 0.90, y: 0.76 },
-
-      // Top
       { id: 15, label: '⊤', short: 'Top',
         name: 'Top — all inner terms, no shared attribute',
         extent: ['Meaning','Saying','Non-meaning','Non-saying'],
@@ -475,23 +484,73 @@ const DATASETS = {
         x: 0.50, y: 0.96 }
     ],
     edges: [
-      // Top to the four M₂ attribute concepts
       [15, 11], [15, 12], [15, 13], [15, 14],
-      // M₂ to the three pairs each contains
       [11, 5], [11, 6], [11, 8],
       [12, 5], [12, 7], [12, 9],
       [13, 6], [13, 7], [13, 10],
       [14, 8], [14, 9], [14, 10],
-      // Pairs to the two object concepts each contains
       [5, 1], [5, 2],
       [6, 1], [6, 3],
       [7, 1], [7, 4],
       [8, 2], [8, 3],
       [9, 2], [9, 4],
       [10, 3], [10, 4],
-      // Objects to bottom
       [1, 0], [2, 0], [3, 0], [4, 0]
-    ]
+    ],
+    // --- Greimas square configuration ---
+    greimas: {
+      viewBox: { w: 620, h: 520 },
+      // Lattice concept id → Greimas node key
+      mapping: {
+        1: 'meaning',        2: 'saying',
+        3: 'non-meaning',    4: 'non-saying',
+        5: 'sincere-speech', 7: 'tacit-meaning',
+        8: 'empty-speech',   10: 'silence',
+        11: 'expressed',     12: 'grounded',
+        13: 'unspoken',      14: 'uncommitted'
+      },
+      nodes: {
+        'meaning':        { x: 220, y: 190, label: 'Meaning',        tier: 'inner', labelPos: 'below' },
+        'saying':         { x: 400, y: 190, label: 'Saying',         tier: 'inner', labelPos: 'below' },
+        'non-saying':     { x: 220, y: 330, label: 'Non-saying',     tier: 'inner', labelPos: 'above' },
+        'non-meaning':    { x: 400, y: 330, label: 'Non-meaning',    tier: 'inner', labelPos: 'above' },
+        'sincere-speech': { x: 310, y: 90,  label: 'Sincere speech', tier: 'm1',    labelPos: 'below' },
+        'empty-speech':   { x: 500, y: 260, label: 'Empty speech',   tier: 'm1',    labelPos: 'right' },
+        'silence':        { x: 310, y: 430, label: 'Silence',        tier: 'm1',    labelPos: 'above' },
+        'tacit-meaning':  { x: 120, y: 260, label: 'Tacit meaning',  tier: 'm1',    labelPos: 'left' },
+        'grounded':       { x: 70,  y: 50,  label: 'Grounded',       tier: 'm2',    labelPos: 'below' },
+        'expressed':      { x: 550, y: 50,  label: 'Expressed',      tier: 'm2',    labelPos: 'below' },
+        'unspoken':       { x: 70,  y: 470, label: 'Unspoken',       tier: 'm2',    labelPos: 'above' },
+        'uncommitted':    { x: 550, y: 470, label: 'Uncommitted',    tier: 'm2',    labelPos: 'above' }
+      },
+      edges: [
+        // Inner square
+        ['meaning', 'saying',        'inner'],
+        ['non-saying', 'non-meaning','inner'],
+        ['meaning', 'non-meaning',   'inner'],
+        ['saying', 'non-saying',     'inner'],
+        ['meaning', 'non-saying',    'inner'],
+        ['saying', 'non-meaning',    'inner'],
+        // Inner to M1
+        ['meaning', 'sincere-speech',     'inner-m1'],
+        ['saying', 'sincere-speech',      'inner-m1'],
+        ['meaning', 'tacit-meaning',      'inner-m1'],
+        ['non-saying', 'tacit-meaning',   'inner-m1'],
+        ['saying', 'empty-speech',        'inner-m1'],
+        ['non-meaning', 'empty-speech',   'inner-m1'],
+        ['non-saying', 'silence',         'inner-m1'],
+        ['non-meaning', 'silence',        'inner-m1'],
+        // M1 to M2
+        ['sincere-speech', 'grounded',    'm1-m2'],
+        ['sincere-speech', 'expressed',   'm1-m2'],
+        ['tacit-meaning', 'grounded',     'm1-m2'],
+        ['tacit-meaning', 'unspoken',     'm1-m2'],
+        ['empty-speech', 'expressed',     'm1-m2'],
+        ['empty-speech', 'uncommitted',   'm1-m2'],
+        ['silence', 'unspoken',           'm1-m2'],
+        ['silence', 'uncommitted',        'm1-m2']
+      ]
+    }
   },
 
   freedom2: {
@@ -539,7 +598,8 @@ const state = {
   pinnedByDataset: { planets: null, freedom: null, meaning: null, freedom2: null },
   hoverId: null,
   D: null,
-  nodeEls: [], edgeEls: [], scDotEls: [], scLegendRows: []
+  nodeEls: [], edgeEls: [], scDotEls: [], scLegendRows: [],
+  greimasNodeEls: [], greimasNodeElsByKey: {}
 };
 
 // =========================================================
@@ -681,7 +741,132 @@ function buildLattice() {
 }
 
 // =========================================================
-// 5. SCATTER BUILD
+// 5. GREIMAS SQUARE BUILD
+// =========================================================
+
+function buildGreimas() {
+  const D = state.D;
+  const card = document.getElementById('greimas-card');
+  const svg = document.getElementById('greimas');
+  const hint = document.getElementById('greimas-hint');
+  svg.innerHTML = '';
+  state.greimasNodeEls = [];
+  state.greimasNodeElsByKey = {};
+
+  if (!D.greimas) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = 'block';
+
+  const G = D.greimas;
+  svg.setAttribute('viewBox', `0 0 ${G.viewBox.w} ${G.viewBox.h}`);
+
+  // --- Edges (drawn first, behind nodes) ---
+  G.edges.forEach(([a, b, kind]) => {
+    const na = G.nodes[a], nb = G.nodes[b];
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', na.x); line.setAttribute('y1', na.y);
+    line.setAttribute('x2', nb.x); line.setAttribute('y2', nb.y);
+    if (kind === 'inner') {
+      line.setAttribute('stroke', '#c9a227');
+      line.setAttribute('stroke-width', '1.8');
+      line.setAttribute('stroke-dasharray', '5 3');
+      line.setAttribute('stroke-opacity', '0.85');
+    } else if (kind === 'inner-m1') {
+      line.setAttribute('stroke', '#5b9bd5');
+      line.setAttribute('stroke-width', '1.1');
+      line.setAttribute('stroke-dasharray', '2 3');
+      line.setAttribute('stroke-opacity', '0.65');
+    } else {
+      line.setAttribute('stroke', '#3fa34d');
+      line.setAttribute('stroke-width', '1.1');
+      line.setAttribute('stroke-opacity', '0.55');
+    }
+    svg.appendChild(line);
+  });
+
+  // --- Nodes ---
+  Object.entries(G.nodes).forEach(([key, node]) => {
+    const g = document.createElementNS(svgNS, 'g');
+    g.setAttribute('class', 'greimas-node');
+    g.setAttribute('data-key', key);
+
+    let radius = 16;
+    let fill = '#ffd23f';
+    if (node.tier === 'm1') { fill = '#5b9bd5'; radius = 14; }
+    else if (node.tier === 'm2') { fill = '#3fa34d'; radius = 12; }
+
+    // Pin ring (hidden by default, shown on highlight)
+    const pinRing = document.createElementNS(svgNS, 'circle');
+    pinRing.setAttribute('cx', node.x);
+    pinRing.setAttribute('cy', node.y);
+    pinRing.setAttribute('r', radius + 8);
+    pinRing.setAttribute('class', 'greimas-pin-ring');
+    g.appendChild(pinRing);
+
+    const circle = document.createElementNS(svgNS, 'circle');
+    circle.setAttribute('cx', node.x);
+    circle.setAttribute('cy', node.y);
+    circle.setAttribute('r', radius);
+    circle.setAttribute('fill', fill);
+    circle.setAttribute('stroke', '#1a1a1a');
+    circle.setAttribute('stroke-width', '1.5');
+    g.appendChild(circle);
+
+    // Label
+    const t = document.createElementNS(svgNS, 'text');
+    t.setAttribute('fill', '#c8cde0');
+    t.style.fontSize = '11px';
+    t.style.fontWeight = '600';
+    t.style.userSelect = 'none';
+    t.style.pointerEvents = 'none';
+    t.textContent = node.label;
+
+    const gap = 6;
+    if (node.labelPos === 'below') {
+      t.setAttribute('x', node.x);
+      t.setAttribute('y', node.y + radius + 14);
+      t.setAttribute('text-anchor', 'middle');
+    } else if (node.labelPos === 'above') {
+      t.setAttribute('x', node.x);
+      t.setAttribute('y', node.y - radius - gap);
+      t.setAttribute('text-anchor', 'middle');
+    } else if (node.labelPos === 'left') {
+      t.setAttribute('x', node.x - radius - gap);
+      t.setAttribute('y', node.y + 4);
+      t.setAttribute('text-anchor', 'end');
+    } else { // right
+      t.setAttribute('x', node.x + radius + gap);
+      t.setAttribute('y', node.y + 4);
+      t.setAttribute('text-anchor', 'start');
+    }
+    g.appendChild(t);
+
+    svg.appendChild(g);
+    state.greimasNodeEls.push(g);
+    state.greimasNodeElsByKey[key] = g;
+  });
+
+  hint.textContent = 'Click a lattice node to highlight its counterpart. Concepts not shown here have no counterpart in the square.';
+
+  // Sync current pinned state
+  updateGreimas();
+}
+
+function updateGreimas() {
+  if (!state.D.greimas) return;
+  const p = getPinned();
+  const key = (p !== null) ? state.D.greimas.mapping[p] : null;
+
+  state.greimasNodeEls.forEach(el => el.classList.remove('highlighted'));
+  if (key && state.greimasNodeElsByKey[key]) {
+    state.greimasNodeElsByKey[key].classList.add('highlighted');
+  }
+}
+
+// =========================================================
+// 6. SCATTER BUILD
 // =========================================================
 
 function buildScatter() {
@@ -888,7 +1073,7 @@ function buildScatter() {
 }
 
 // =========================================================
-// 6. STATE & INTERACTION
+// 7. STATE & INTERACTION
 // =========================================================
 
 function getPinned() { return state.pinnedByDataset[state.currentKey]; }
@@ -911,6 +1096,7 @@ function onToggle(i) {
     applyState(i);
   }
   renderPanel();
+  updateGreimas();
 }
 
 function applyState(i) {
@@ -952,7 +1138,7 @@ function refreshPins() {
 }
 
 // =========================================================
-// 7. PANEL
+// 8. PANEL
 // =========================================================
 
 function chipList(arr, cls) {
@@ -1021,6 +1207,14 @@ function updatePanel(i) {
     ? `<div class="chips">${chipList(c.intent, 'attr')}</div>`
     : `<div class="hint" style="font-size:12px;">∅ — nothing shared</div>`;
 
+  // Greimas correspondence, if any
+  if (D.greimas && D.greimas.mapping[i] !== undefined) {
+    const gKey = D.greimas.mapping[i];
+    const gNode = D.greimas.nodes[gKey];
+    html += `<div class="section-title">Greimas Square</div>`;
+    html += `<div class="kv">Corresponds to <span class="chip self">${gNode.label}</span> in the Greimas square below.</div>`;
+  }
+
   html += `<div class="section-title">Hierarchy</div>`;
   html += `<div class="kv"><span class="k">Covered by:</span> ${
     D.parents[i].length ? chipNodes(D.parents[i], 'anc')
@@ -1063,7 +1257,7 @@ function updatePanel(i) {
 }
 
 // =========================================================
-// 8. SCATTER UPDATE
+// 9. SCATTER UPDATE
 // =========================================================
 
 function updateScatter(i) {
@@ -1130,7 +1324,7 @@ function updateScatter(i) {
 }
 
 // =========================================================
-// 9. TAB SWITCHING
+// 10. TAB SWITCHING
 // =========================================================
 
 function switchTo(key) {
@@ -1147,11 +1341,13 @@ function switchTo(key) {
 
   buildLattice();
   buildScatter();
+  buildGreimas();
 
   const p = getPinned();
   if (p !== null) applyState(p);
   else clearAll();
   renderPanel();
+  updateGreimas();
 }
 
 function buildTabs() {
@@ -1177,7 +1373,7 @@ function buildTabs() {
 }
 
 // =========================================================
-// 10. BACKGROUND CLICK RELEASES PIN
+// 11. BACKGROUND CLICK RELEASES PIN
 // =========================================================
 
 document.addEventListener('click', () => {
@@ -1186,11 +1382,12 @@ document.addEventListener('click', () => {
     if (state.hoverId !== null) applyState(state.hoverId);
     else clearAll();
     renderPanel();
+    updateGreimas();
   }
 });
 
 // =========================================================
-// 11. INIT
+// 12. INIT
 // =========================================================
 
 buildTabs();
