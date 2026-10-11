@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Concept Lattice — Freedom</title>
+<title>Concept Lattice Viewer</title>
 <style>
   :root {
     --bg: #0f1220;
@@ -17,6 +17,7 @@
     --anc: #ff8c42;
     --desc: #e63946;
     --edge: #4a5170;
+    --accent: #5b9bd5;
   }
   * { box-sizing: border-box; }
   html, body {
@@ -29,15 +30,45 @@
     min-height: 100vh;
   }
   header {
-    padding: 22px 34px 16px;
+    padding: 22px 34px 14px;
     border-bottom: 1px solid #2a2f45;
   }
   header h1 { margin: 0 0 6px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
   header p { margin: 0; color: var(--text-dim); font-size: 13px; }
 
+  .tabbar {
+    display: flex;
+    gap: 8px;
+    padding: 14px 34px 0;
+    flex-wrap: wrap;
+  }
+  .tab {
+    appearance: none;
+    border: 1px solid #2f3550;
+    background: var(--panel);
+    color: var(--text-dim);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .18s, color .18s, border-color .18s, box-shadow .18s;
+  }
+  .tab:hover {
+    color: var(--text);
+    border-color: #3d456b;
+  }
+  .tab.active {
+    background: #22304d;
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 14px rgba(91,155,213,.35);
+  }
+
   .legend {
     display: flex; gap: 18px; flex-wrap: wrap;
-    padding: 12px 34px;
+    padding: 14px 34px 0;
     font-size: 12px; color: var(--text-dim);
   }
   .legend .dot {
@@ -49,7 +80,7 @@
 
   .container {
     display: flex; gap: 22px;
-    padding: 10px 34px 40px;
+    padding: 14px 34px 40px;
     align-items: flex-start;
     flex-wrap: wrap;
   }
@@ -70,7 +101,6 @@
     stroke: var(--node-edge);
     stroke-width: 1.5;
     transition: fill .25s, stroke .25s, r .25s;
-    r: 22;
   }
   .node text {
     fill: #c8cde0;
@@ -91,7 +121,6 @@
     stroke: #fff3c4;
     stroke-width: 3;
     filter: drop-shadow(0 0 14px rgba(255,210,63,.85));
-    r: 26;
   }
   .node.ancestor circle {
     fill: var(--anc);
@@ -152,7 +181,7 @@
     padding: 18px 20px 20px;
     margin-bottom: 16px;
     box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-    max-height: 70vh;
+    max-height: 72vh;
     overflow-y: auto;
   }
   .card h2 {
@@ -233,9 +262,11 @@
 <body>
 
 <header>
-  <h1>Concept Lattice — Freedom</h1>
-  <p>Four binary oppositions: non-interference, available options, effective agency, authenticity.</p>
+  <h1 id="page-title">Concept Lattice Viewer</h1>
+  <p id="page-subtitle">Hover a node to preview its joins and meets. Click to pin. Click again to release.</p>
 </header>
+
+<div class="tabbar" id="tabbar"></div>
 
 <div class="legend">
   <span><span class="dot" style="background:#5b9bd5"></span>Concept</span>
@@ -246,7 +277,7 @@
 
 <div class="container">
   <div id="lattice-wrap">
-    <svg id="lattice" viewBox="0 0 800 720"></svg>
+    <svg id="lattice"></svg>
   </div>
   <div id="panel">
     <div class="card" id="info-card">
@@ -255,7 +286,7 @@
     </div>
     <div class="card">
       <h2>Extent × Intent</h2>
-      <svg id="scatter" viewBox="0 0 480 420"></svg>
+      <svg id="scatter"></svg>
       <div class="scatter-hint">Dot size reflects how many concepts share the same position.</div>
     </div>
   </div>
@@ -263,454 +294,368 @@
 
 <script>
 // =========================================================
-// 1. DATA — B₄, sixteen concepts
+// 1. DATASETS
 // =========================================================
 
-const CONCEPTS = [
-  // Bottom — most specific
-  { id: 0, label: 'Full · freedom', short: 'FF',
-    name: 'Full freedom — all four attributes present',
-    extent: ['Full freedom'],
-    intent: ['Non-interference','Available options','Effective agency','Authenticity'],
-    x: 0.50, y: 0.06 },
+const DATASETS = {
 
-  // Triples
-  { id: 1, label: 'Republican · liberty', short: 'RepLib',
-    name: 'Republican liberty — NI + AO + EA, but not authenticity',
-    extent: ['Republican liberty','Full freedom'],
-    intent: ['Non-interference','Available options','Effective agency'],
-    x: 0.18, y: 0.30 },
+  planets: {
+    title: 'Concept Lattice — Solar System',
+    subtitle: 'Hover a node to preview its joins and meets. Click to pin. Click again to release.',
+    viewBox: { w: 800, h: 660 },
+    padX: 100, padY: 90,
+    nodeR: 26,
+    labelLines: false,
+    scatter: { w: 480, h: 320, padL: 44, padR: 200, padT: 22, padB: 42,
+               maxExt: 6, maxInt: 6 },
+    concepts: [
+      { id: 0, label: '⊥', short: 'Bottom',
+        name: 'Bottom — empty extent, all attributes',
+        extent: [],
+        intent: ['Is a planet','Is small','Is large','Has no moons','Has moons','Is far from sun'],
+        x: 0.50, y: 0.04 },
+      { id: 1, label: 'Small · no moons', short: 'Sm·NM',
+        name: 'Small planets without moons',
+        extent: ['Mercury','Venus'],
+        intent: ['Is a planet','Is small','Has no moons'],
+        x: 0.14, y: 0.30 },
+      { id: 2, label: 'Small · has moons', short: 'Sm·HM',
+        name: 'Small planets with moons',
+        extent: ['Earth','Mars'],
+        intent: ['Is a planet','Is small','Has moons'],
+        x: 0.50, y: 0.30 },
+      { id: 3, label: 'Large · moons · far', short: 'Lg·HM·FS',
+        name: 'Large planets with moons, far from sun',
+        extent: ['Jupiter','Saturn'],
+        intent: ['Is a planet','Is large','Has moons','Is far from sun'],
+        x: 0.86, y: 0.30 },
+      { id: 4, label: 'Small', short: 'Small',
+        name: 'All small planets',
+        extent: ['Mercury','Venus','Earth','Mars'],
+        intent: ['Is a planet','Is small'],
+        x: 0.28, y: 0.56 },
+      { id: 5, label: 'Has moons', short: 'Moons',
+        name: 'All planets with moons',
+        extent: ['Earth','Mars','Jupiter','Saturn'],
+        intent: ['Is a planet','Has moons'],
+        x: 0.72, y: 0.56 },
+      { id: 6, label: '⊤', short: 'Top',
+        name: 'Top — all planets, shared attribute only',
+        extent: ['Mercury','Venus','Earth','Mars','Jupiter','Saturn'],
+        intent: ['Is a planet'],
+        x: 0.50, y: 0.82 }
+    ],
+    edges: [
+      [0,1],[0,2],[0,3],
+      [1,4],
+      [2,4],[2,5],
+      [3,5],
+      [4,6],[5,6]
+    ]
+  },
 
-  { id: 2, label: 'Autonomous · liberty', short: 'AutLib',
-    name: 'Autonomous liberty — NI + AO + AU, but not effective agency',
-    extent: ['Autonomous liberty','Full freedom'],
-    intent: ['Non-interference','Available options','Authenticity'],
-    x: 0.40, y: 0.30 },
-
-  { id: 3, label: 'Self-authored · IF', short: 'SelfIF',
-    name: 'Self-authored inner freedom — NI + EA + AU, but not options',
-    extent: ['Self-authored inner freedom','Full freedom'],
-    intent: ['Non-interference','Effective agency','Authenticity'],
-    x: 0.60, y: 0.30 },
-
-  { id: 4, label: 'Empowered · autonomy', short: 'EmpAut',
-    name: 'Empowered autonomy — AO + EA + AU, but not non-interference',
-    extent: ['Empowered autonomy','Full freedom'],
-    intent: ['Available options','Effective agency','Authenticity'],
-    x: 0.82, y: 0.30 },
-
-  // Pairs
-  { id: 5, label: 'Formal · liberty', short: 'FormLib',
-    name: 'Formal liberty — non-interference and options',
-    extent: ['Formal liberty','Republican liberty','Autonomous liberty','Full freedom'],
-    intent: ['Non-interference','Available options'],
-    x: 0.10, y: 0.52 },
-
-  { id: 6, label: 'Inner · freedom', short: 'InnerF',
-    name: 'Inner freedom — non-interference and effective agency',
-    extent: ['Inner freedom','Republican liberty','Self-authored inner freedom','Full freedom'],
-    intent: ['Non-interference','Effective agency'],
-    x: 0.24, y: 0.52 },
-
-  { id: 7, label: 'Authentic · NI', short: 'AutNI',
-    name: 'Authentic non-interference — NI plus authenticity',
-    extent: ['Authentic NI','Autonomous liberty','Self-authored inner freedom','Full freedom'],
-    intent: ['Non-interference','Authenticity'],
-    x: 0.40, y: 0.52 },
-
-  { id: 8, label: 'Capability', short: 'Cap',
-    name: 'Capability — options and effective agency',
-    extent: ['Capability','Republican liberty','Empowered autonomy','Full freedom'],
-    intent: ['Available options','Effective agency'],
-    x: 0.56, y: 0.52 },
-
-  { id: 9, label: 'Authentic · choice', short: 'AutCh',
-    name: 'Authentic choice — options plus authenticity',
-    extent: ['Authentic choice','Autonomous liberty','Empowered autonomy','Full freedom'],
-    intent: ['Available options','Authenticity'],
-    x: 0.72, y: 0.52 },
-
-  { id: 10, label: 'Authentic · agency', short: 'AutAg',
-    name: 'Authentic agency — effective agency plus authenticity',
-    extent: ['Authentic agency','Self-authored inner freedom','Empowered autonomy','Full freedom'],
-    intent: ['Effective agency','Authenticity'],
-    x: 0.90, y: 0.52 },
-
-  // Singles
-  { id: 11, label: 'Non- · interference', short: 'NI',
-    name: 'Non-interference — negative liberty as such',
-    extent: ['Mere non-interference','Formal liberty','Inner freedom','Authentic NI',
-             'Republican liberty','Autonomous liberty','Self-authored inner freedom','Full freedom'],
-    intent: ['Non-interference'],
-    x: 0.10, y: 0.76 },
-
-  { id: 12, label: 'Available · options', short: 'AO',
-    name: 'Available options — the opportunity component',
-    extent: ['Options without liberty','Formal liberty','Capability','Authentic choice',
-             'Republican liberty','Autonomous liberty','Empowered autonomy','Full freedom'],
-    intent: ['Available options'],
-    x: 0.35, y: 0.76 },
-
-  { id: 13, label: 'Effective · agency', short: 'EA',
-    name: 'Effective agency — the capability component',
-    extent: ['Bare capacity','Inner freedom','Capability','Authentic agency',
-             'Republican liberty','Self-authored inner freedom','Empowered autonomy','Full freedom'],
-    intent: ['Effective agency'],
-    x: 0.65, y: 0.76 },
-
-  { id: 14, label: 'Authenticity', short: 'AU',
-    name: 'Authenticity — the self-authorship component',
-    extent: ['Authentic but unfree','Authentic NI','Authentic choice','Authentic agency',
-             'Autonomous liberty','Self-authored inner freedom','Empowered autonomy','Full freedom'],
-    intent: ['Authenticity'],
-    x: 0.90, y: 0.76 },
-
-  // Top
-  { id: 15, label: 'Freedom', short: 'Freedom',
-    name: 'Freedom as such — the most general concept',
-    extent: ['Mere non-interference','Options without liberty','Bare capacity','Authentic but unfree',
-             'Formal liberty','Inner freedom','Authentic NI','Capability','Authentic choice',
-             'Authentic agency','Republican liberty','Autonomous liberty',
-             'Self-authored inner freedom','Empowered autonomy','Full freedom'],
-    intent: [],
-    x: 0.50, y: 0.96 }
-];
-
-const EDGES = [
-  // Top to singles
-  [15, 11], [15, 12], [15, 13], [15, 14],
-  // Singles to pairs
-  [11, 5], [11, 6], [11, 7],
-  [12, 5], [12, 8], [12, 9],
-  [13, 6], [13, 8], [13, 10],
-  [14, 7], [14, 9], [14, 10],
-  // Pairs to triples
-  [5, 1], [5, 2],
-  [6, 1], [6, 3],
-  [7, 2], [7, 3],
-  [8, 1], [8, 4],
-  [9, 2], [9, 4],
-  [10, 3], [10, 4],
-  // Triples to bottom
-  [1, 0], [2, 0], [3, 0], [4, 0]
-];
-
-// =========================================================
-// 2. STRUCTURE
-// =========================================================
-
-const N = CONCEPTS.length;
-
-const parents = Array.from({length:N}, () => []);
-const children = Array.from({length:N}, () => []);
-EDGES.forEach(([a,b]) => { parents[a].push(b); children[b].push(a); });
-
-function ancestorsOf(i) {
-  const seen = new Set(); const stack = [...parents[i]];
-  while (stack.length) {
-    const j = stack.pop();
-    if (seen.has(j)) continue;
-    seen.add(j); stack.push(...parents[j]);
+  freedom: {
+    title: 'Concept Lattice — Freedom',
+    subtitle: 'Four binary oppositions: non-interference, available options, effective agency, authenticity.',
+    viewBox: { w: 800, h: 720 },
+    padX: 70, padY: 80,
+    nodeR: 22,
+    labelLines: true,
+    scatter: { w: 480, h: 420, padL: 44, padR: 190, padT: 22, padB: 42,
+               maxExt: 15, maxInt: 4 },
+    concepts: [
+      { id: 0, label: 'Full · freedom', short: 'FF',
+        name: 'Full freedom — all four attributes present',
+        extent: ['Full freedom'],
+        intent: ['Non-interference','Available options','Effective agency','Authenticity'],
+        x: 0.50, y: 0.06 },
+      { id: 1, label: 'Republican · liberty', short: 'RepLib',
+        name: 'Republican liberty — NI + AO + EA, but not authenticity',
+        extent: ['Republican liberty','Full freedom'],
+        intent: ['Non-interference','Available options','Effective agency'],
+        x: 0.18, y: 0.30 },
+      { id: 2, label: 'Autonomous · liberty', short: 'AutLib',
+        name: 'Autonomous liberty — NI + AO + AU, but not effective agency',
+        extent: ['Autonomous liberty','Full freedom'],
+        intent: ['Non-interference','Available options','Authenticity'],
+        x: 0.40, y: 0.30 },
+      { id: 3, label: 'Self-authored · IF', short: 'SelfIF',
+        name: 'Self-authored inner freedom — NI + EA + AU, but not options',
+        extent: ['Self-authored inner freedom','Full freedom'],
+        intent: ['Non-interference','Effective agency','Authenticity'],
+        x: 0.60, y: 0.30 },
+      { id: 4, label: 'Empowered · autonomy', short: 'EmpAut',
+        name: 'Empowered autonomy — AO + EA + AU, but not non-interference',
+        extent: ['Empowered autonomy','Full freedom'],
+        intent: ['Available options','Effective agency','Authenticity'],
+        x: 0.82, y: 0.30 },
+      { id: 5, label: 'Formal · liberty', short: 'FormLib',
+        name: 'Formal liberty — non-interference and options',
+        extent: ['Formal liberty','Republican liberty','Autonomous liberty','Full freedom'],
+        intent: ['Non-interference','Available options'],
+        x: 0.10, y: 0.52 },
+      { id: 6, label: 'Inner · freedom', short: 'InnerF',
+        name: 'Inner freedom — non-interference and effective agency',
+        extent: ['Inner freedom','Republican liberty','Self-authored inner freedom','Full freedom'],
+        intent: ['Non-interference','Effective agency'],
+        x: 0.24, y: 0.52 },
+      { id: 7, label: 'Authentic · NI', short: 'AutNI',
+        name: 'Authentic non-interference — NI plus authenticity',
+        extent: ['Authentic NI','Autonomous liberty','Self-authored inner freedom','Full freedom'],
+        intent: ['Non-interference','Authenticity'],
+        x: 0.40, y: 0.52 },
+      { id: 8, label: 'Capability', short: 'Cap',
+        name: 'Capability — options and effective agency',
+        extent: ['Capability','Republican liberty','Empowered autonomy','Full freedom'],
+        intent: ['Available options','Effective agency'],
+        x: 0.56, y: 0.52 },
+      { id: 9, label: 'Authentic · choice', short: 'AutCh',
+        name: 'Authentic choice — options plus authenticity',
+        extent: ['Authentic choice','Autonomous liberty','Empowered autonomy','Full freedom'],
+        intent: ['Available options','Authenticity'],
+        x: 0.72, y: 0.52 },
+      { id: 10, label: 'Authentic · agency', short: 'AutAg',
+        name: 'Authentic agency — effective agency plus authenticity',
+        extent: ['Authentic agency','Self-authored inner freedom','Empowered autonomy','Full freedom'],
+        intent: ['Effective agency','Authenticity'],
+        x: 0.90, y: 0.52 },
+      { id: 11, label: 'Non- · interference', short: 'NI',
+        name: 'Non-interference — negative liberty as such',
+        extent: ['Mere non-interference','Formal liberty','Inner freedom','Authentic NI',
+                 'Republican liberty','Autonomous liberty','Self-authored inner freedom','Full freedom'],
+        intent: ['Non-interference'],
+        x: 0.10, y: 0.76 },
+      { id: 12, label: 'Available · options', short: 'AO',
+        name: 'Available options — the opportunity component',
+        extent: ['Options without liberty','Formal liberty','Capability','Authentic choice',
+                 'Republican liberty','Autonomous liberty','Empowered autonomy','Full freedom'],
+        intent: ['Available options'],
+        x: 0.35, y: 0.76 },
+      { id: 13, label: 'Effective · agency', short: 'EA',
+        name: 'Effective agency — the capability component',
+        extent: ['Bare capacity','Inner freedom','Capability','Authentic agency',
+                 'Republican liberty','Self-authored inner freedom','Empowered autonomy','Full freedom'],
+        intent: ['Effective agency'],
+        x: 0.65, y: 0.76 },
+      { id: 14, label: 'Authenticity', short: 'AU',
+        name: 'Authenticity — the self-authorship component',
+        extent: ['Authentic but unfree','Authentic NI','Authentic choice','Authentic agency',
+                 'Autonomous liberty','Self-authored inner freedom','Empowered autonomy','Full freedom'],
+        intent: ['Authenticity'],
+        x: 0.90, y: 0.76 },
+      { id: 15, label: 'Freedom', short: 'Freedom',
+        name: 'Freedom as such — the most general concept',
+        extent: ['Mere non-interference','Options without liberty','Bare capacity','Authentic but unfree',
+                 'Formal liberty','Inner freedom','Authentic NI','Capability','Authentic choice',
+                 'Authentic agency','Republican liberty','Autonomous liberty',
+                 'Self-authored inner freedom','Empowered autonomy','Full freedom'],
+        intent: [],
+        x: 0.50, y: 0.96 }
+    ],
+    edges: [
+      [15, 11], [15, 12], [15, 13], [15, 14],
+      [11, 5], [11, 6], [11, 7],
+      [12, 5], [12, 8], [12, 9],
+      [13, 6], [13, 8], [13, 10],
+      [14, 7], [14, 9], [14, 10],
+      [5, 1], [5, 2],
+      [6, 1], [6, 3],
+      [7, 2], [7, 3],
+      [8, 1], [8, 4],
+      [9, 2], [9, 4],
+      [10, 3], [10, 4],
+      [1, 0], [2, 0], [3, 0], [4, 0]
+    ]
   }
-  return seen;
-}
-function descendantsOf(i) {
-  const seen = new Set(); const stack = [...children[i]];
-  while (stack.length) {
-    const j = stack.pop();
-    if (seen.has(j)) continue;
-    seen.add(j); stack.push(...children[j]);
-  }
-  return seen;
-}
+};
 
-const ANCS = CONCEPTS.map((_, i) => ancestorsOf(i));
-const DESC = CONCEPTS.map((_, i) => descendantsOf(i));
+// =========================================================
+// 2. GLOBAL STATE
+// =========================================================
 
-function join(a, b) {
-  if (a === b) return a;
-  if (ANCS[a].has(b)) return b;
-  if (ANCS[b].has(a)) return a;
-  const upA = new Set([a, ...ANCS[a]]);
-  const upB = new Set([b, ...ANCS[b]]);
-  const inter = [...upA].filter(x => upB.has(x));
-  for (const x of inter) {
-    let minimal = true;
-    for (const y of inter) {
-      if (y !== x && DESC[x].has(y)) { minimal = false; break; }
+const state = {
+  currentKey: 'planets',
+  pinnedByDataset: { planets: null, freedom: null },
+  hoverId: null,
+  D: null,             // current processed dataset
+  nodeEls: [],
+  edgeEls: [],
+  scDotEls: [],
+  scLegendRows: []
+};
+
+// =========================================================
+// 3. PROCESSING — build derived structures for a dataset
+// =========================================================
+
+function processDataset(raw) {
+  const N = raw.concepts.length;
+  const parents = Array.from({length:N}, () => []);
+  const children = Array.from({length:N}, () => []);
+  raw.edges.forEach(([a,b]) => { parents[a].push(b); children[b].push(a); });
+
+  function ancestorsOf(i) {
+    const seen = new Set(); const stack = [...parents[i]];
+    while (stack.length) {
+      const j = stack.pop();
+      if (seen.has(j)) continue;
+      seen.add(j); stack.push(...parents[j]);
     }
-    if (minimal) return x;
+    return seen;
   }
-  return inter[0];
-}
-function meet(a, b) {
-  if (a === b) return a;
-  if (DESC[a].has(b)) return b;
-  if (DESC[b].has(a)) return a;
-  const downA = new Set([a, ...DESC[a]]);
-  const downB = new Set([b, ...DESC[b]]);
-  const inter = [...downA].filter(x => downB.has(x));
-  for (const x of inter) {
-    let maximal = true;
-    for (const y of inter) {
-      if (y !== x && ANCS[x].has(y)) { maximal = false; break; }
+  function descendantsOf(i) {
+    const seen = new Set(); const stack = [...children[i]];
+    while (stack.length) {
+      const j = stack.pop();
+      if (seen.has(j)) continue;
+      seen.add(j); stack.push(...children[j]);
     }
-    if (maximal) return x;
+    return seen;
   }
-  return inter[0];
+
+  const ANCS = raw.concepts.map((_, i) => ancestorsOf(i));
+  const DESC = raw.concepts.map((_, i) => descendantsOf(i));
+
+  function join(a, b) {
+    if (a === b) return a;
+    if (ANCS[a].has(b)) return b;
+    if (ANCS[b].has(a)) return a;
+    const upA = new Set([a, ...ANCS[a]]);
+    const upB = new Set([b, ...ANCS[b]]);
+    const inter = [...upA].filter(x => upB.has(x));
+    for (const x of inter) {
+      let minimal = true;
+      for (const y of inter) {
+        if (y !== x && DESC[x].has(y)) { minimal = false; break; }
+      }
+      if (minimal) return x;
+    }
+    return inter[0];
+  }
+  function meet(a, b) {
+    if (a === b) return a;
+    if (DESC[a].has(b)) return b;
+    if (DESC[b].has(a)) return a;
+    const downA = new Set([a, ...DESC[a]]);
+    const downB = new Set([b, ...DESC[b]]);
+    const inter = [...downA].filter(x => downB.has(x));
+    for (const x of inter) {
+      let maximal = true;
+      for (const y of inter) {
+        if (y !== x && ANCS[x].has(y)) { maximal = false; break; }
+      }
+      if (maximal) return x;
+    }
+    return inter[0];
+  }
+
+  return Object.assign({}, raw, {
+    N, parents, children, ANCS, DESC, join, meet
+  });
 }
 
 // =========================================================
-// 3. LATTICE RENDERING
+// 4. SVG HELPERS
 // =========================================================
 
 const svgNS = 'http://www.w3.org/2000/svg';
-const svg = document.getElementById('lattice');
-const W = 800, H = 720;
-const PAD_X = 70, PAD_Y = 80;
-const NODE_R = 22;
-
-const px = CONCEPTS.map(c => ({
-  x: PAD_X + c.x * (W - 2*PAD_X),
-  y: H - PAD_Y - c.y * (H - 2*PAD_Y)
-}));
-
-const edgeEls = [];
-EDGES.forEach(([a,b]) => {
-  const line = document.createElementNS(svgNS, 'line');
-  line.setAttribute('x1', px[a].x); line.setAttribute('y1', px[a].y);
-  line.setAttribute('x2', px[b].x); line.setAttribute('y2', px[b].y);
-  line.setAttribute('class', 'edge');
-  line.dataset.a = a; line.dataset.b = b;
-  svg.appendChild(line); edgeEls.push(line);
-});
-
-const nodeEls = [];
-CONCEPTS.forEach((c, i) => {
-  const g = document.createElementNS(svgNS, 'g');
-  g.setAttribute('class', 'node');
-  g.dataset.id = i;
-
-  const pinRing = document.createElementNS(svgNS, 'circle');
-  pinRing.setAttribute('cx', px[i].x);
-  pinRing.setAttribute('cy', px[i].y);
-  pinRing.setAttribute('r', NODE_R + 8);
-  pinRing.setAttribute('class', 'pin-ring');
-  g.appendChild(pinRing);
-
-  const circle = document.createElementNS(svgNS, 'circle');
-  circle.setAttribute('cx', px[i].x);
-  circle.setAttribute('cy', px[i].y);
-  circle.setAttribute('r', NODE_R);
-  g.appendChild(circle);
-
-  const lines = c.label.split(' · ');
-  lines.forEach((ln, k) => {
-    const t = document.createElementNS(svgNS, 'text');
-    t.setAttribute('x', px[i].x);
-    t.setAttribute('y', px[i].y + NODE_R + 14 + k * 12);
-    t.setAttribute('text-anchor', 'middle');
-    t.textContent = ln;
-    g.appendChild(t);
-  });
-
-  svg.appendChild(g); nodeEls.push(g);
-
-  g.addEventListener('mouseenter', () => onEnter(i));
-  g.addEventListener('mouseleave', () => onLeave(i));
-  g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(i); });
-});
 
 // =========================================================
-// 4. STATE
+// 5. LATTICE BUILD + RENDER
 // =========================================================
 
-let pinnedId = null;
-let hoverId  = null;
+function buildLattice() {
+  const D = state.D;
+  const svg = document.getElementById('lattice');
+  svg.innerHTML = '';
+  svg.setAttribute('viewBox', `0 0 ${D.viewBox.w} ${D.viewBox.h}`);
 
-function onEnter(i) { hoverId = i; applyState(i); }
-function onLeave(i) {
-  hoverId = null;
-  if (pinnedId !== null) applyState(pinnedId);
-  else clearAll();
-}
-function onToggle(i) {
-  if (pinnedId === i) {
-    pinnedId = null;
-    if (hoverId !== null) applyState(hoverId); else clearAll();
-  } else {
-    pinnedId = i;
-    applyState(i);
-  }
-  renderPanel();
-}
+  const W = D.viewBox.w, H = D.viewBox.h;
+  const PAD_X = D.padX, PAD_Y = D.padY;
+  const NODE_R = D.nodeR;
 
-function applyState(i) {
-  nodeEls.forEach((el, k) => {
-    el.classList.remove('hovered','ancestor','descendant');
-    if (k === i) el.classList.add('hovered');
-    else if (ANCS[i].has(k)) el.classList.add('ancestor');
-    else if (DESC[i].has(k)) el.classList.add('descendant');
+  const px = D.concepts.map(c => ({
+    x: PAD_X + c.x * (W - 2*PAD_X),
+    y: H - PAD_Y - c.y * (H - 2*PAD_Y)
+  }));
+
+  state.nodeEls = [];
+  state.edgeEls = [];
+
+  D.edges.forEach(([a,b]) => {
+    const line = document.createElementNS(svgNS, 'line');
+    line.setAttribute('x1', px[a].x); line.setAttribute('y1', px[a].y);
+    line.setAttribute('x2', px[b].x); line.setAttribute('y2', px[b].y);
+    line.setAttribute('class', 'edge');
+    line.dataset.a = a; line.dataset.b = b;
+    svg.appendChild(line); state.edgeEls.push(line);
   });
 
-  edgeEls.forEach(line => {
-    line.classList.remove('ancestor','descendant');
-    const a = parseInt(line.dataset.a);
-    const b = parseInt(line.dataset.b);
-    const isAbove = (a === i) || ANCS[i].has(a);
-    const isBelow = (b === i) || DESC[i].has(b);
-    if (isAbove) line.classList.add('ancestor');
-    else if (isBelow) line.classList.add('descendant');
-  });
+  D.concepts.forEach((c, i) => {
+    const g = document.createElementNS(svgNS, 'g');
+    g.setAttribute('class', 'node');
+    g.dataset.id = i;
 
-  updatePanel(i);
-  updateScatter(i);
-}
+    const pinRing = document.createElementNS(svgNS, 'circle');
+    pinRing.setAttribute('cx', px[i].x);
+    pinRing.setAttribute('cy', px[i].y);
+    pinRing.setAttribute('r', NODE_R + 8);
+    pinRing.setAttribute('class', 'pin-ring');
+    g.appendChild(pinRing);
 
-function clearAll() {
-  nodeEls.forEach(el => el.classList.remove('hovered','ancestor','descendant'));
-  edgeEls.forEach(line => line.classList.remove('ancestor','descendant'));
-  document.getElementById('info-card').innerHTML =
-    '<h2>Node</h2><div class="hint">Hover a node in the lattice to preview. Click to pin.</div>';
-  updateScatter(null);
-}
+    const circle = document.createElementNS(svgNS, 'circle');
+    circle.setAttribute('cx', px[i].x);
+    circle.setAttribute('cy', px[i].y);
+    circle.setAttribute('r', NODE_R);
+    g.appendChild(circle);
 
-function refreshPins() {
-  nodeEls.forEach((el, k) => {
-    el.classList.toggle('pinned', k === pinnedId);
-  });
-}
-
-// =========================================================
-// 5. PANEL
-// =========================================================
-
-function chipList(arr, cls) {
-  return arr.map(x => `<span class="chip ${cls}">${x}</span>`).join('');
-}
-function chipNodes(ids, cls) {
-  return ids.map(j => `<span class="chip ${cls}">${CONCEPTS[j].short}</span>`).join(' ');
-}
-
-function renderPanel() {
-  if (pinnedId !== null) updatePanel(pinnedId);
-  else if (hoverId !== null) updatePanel(hoverId);
-  else clearAll();
-}
-
-function updatePanel(i) {
-  const c = CONCEPTS[i];
-
-  const joinsByResult = {};
-  for (let j = 0; j < N; j++) {
-    if (j === i) continue;
-    const r = join(i, j);
-    (joinsByResult[r] ||= []).push(j);
-  }
-  const meetsByResult = {};
-  for (let j = 0; j < N; j++) {
-    if (j === i) continue;
-    const r = meet(i, j);
-    (meetsByResult[r] ||= []).push(j);
-  }
-  const asJoinOf = [];
-  for (let x = 0; x < N; x++) {
-    if (x === i) continue;
-    for (let y = x + 1; y < N; y++) {
-      if (y === i) continue;
-      if (join(x, y) === i) asJoinOf.push([x, y]);
-    }
-  }
-  const asMeetOf = [];
-  for (let x = 0; x < N; x++) {
-    if (x === i) continue;
-    for (let y = x + 1; y < N; y++) {
-      if (y === i) continue;
-      if (meet(x, y) === i) asMeetOf.push([x, y]);
-    }
-  }
-
-  const pinnedBadge = (pinnedId === i)
-    ? `<span class="pin-badge">📌 pinned</span>`
-    : `<span class="pin-hint">click to pin</span>`;
-
-  let html = `<h2>Node</h2>`;
-  html += `<div class="node-title">${c.name} ${pinnedBadge}</div>`;
-
-  html += `<div class="section-title first">Extent (scenarios)</div>`;
-  html += c.extent.length
-    ? `<div class="chips">${chipList(c.extent, 'obj')}</div>`
-    : `<div class="hint" style="font-size:12px;">∅ — no scenarios</div>`;
-
-  html += `<div class="section-title">Intent (attributes)</div>`;
-  html += c.intent.length
-    ? `<div class="chips">${chipList(c.intent, 'attr')}</div>`
-    : `<div class="hint" style="font-size:12px;">∅ — no shared attributes</div>`;
-
-  html += `<div class="section-title">Hierarchy</div>`;
-  html += `<div class="kv"><span class="k">Covered by:</span> ${
-    parents[i].length ? chipNodes(parents[i], 'anc')
-                      : `<span class="hint" style="font-size:12px;">nothing (top)</span>`
-  }</div>`;
-  html += `<div class="kv"><span class="k">Covers:</span> ${
-    children[i].length ? chipNodes(children[i], 'desc')
-                       : `<span class="hint" style="font-size:12px;">nothing (bottom)</span>`
-  }</div>`;
-
-  html += `<div class="section-title">Joins with other nodes</div>`;
-  html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊔ each other node:</div>`;
-  Object.keys(joinsByResult).sort((a,b)=>+a - +b).forEach(r => {
-    html += `<div class="kv"><span class="arrow-anc">⊔ → ${CONCEPTS[r].short}</span><br>`;
-    html += `with ${chipNodes(joinsByResult[r], '')}</div>`;
-  });
-
-  html += `<div class="section-title">Meets with other nodes</div>`;
-  html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊓ each other node:</div>`;
-  Object.keys(meetsByResult).sort((a,b)=>+a - +b).forEach(r => {
-    html += `<div class="kv"><span class="arrow-desc">⊓ → ${CONCEPTS[r].short}</span><br>`;
-    html += `with ${chipNodes(meetsByResult[r], '')}</div>`;
-  });
-
-  if (asJoinOf.length) {
-    html += `<div class="section-title">This node as a join</div>`;
-    asJoinOf.forEach(([x, y]) => {
-      html += `<div class="kv"><span class="chip self">${CONCEPTS[x].short} ⊔ ${CONCEPTS[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
+    // Label placement: for two-line labels (freedom), split on " · "
+    // For single-line (planets), the label may itself contain " · "
+    const lines = D.labelLines ? c.label.split(' · ') : [c.label];
+    lines.forEach((ln, k) => {
+      const t = document.createElementNS(svgNS, 'text');
+      t.setAttribute('x', px[i].x);
+      t.setAttribute('y', px[i].y + NODE_R + (D.labelLines ? 14 : 18) + k * 12);
+      t.setAttribute('text-anchor', 'middle');
+      t.textContent = ln;
+      g.appendChild(t);
     });
-  }
 
-  if (asMeetOf.length) {
-    html += `<div class="section-title">This node as a meet</div>`;
-    asMeetOf.forEach(([x, y]) => {
-      html += `<div class="kv"><span class="chip self">${CONCEPTS[x].short} ⊓ ${CONCEPTS[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
-    });
-  }
+    svg.appendChild(g);
+    state.nodeEls.push(g);
 
-  document.getElementById('info-card').innerHTML = html;
+    g.addEventListener('mouseenter', () => onEnter(i));
+    g.addEventListener('mouseleave', () => onLeave(i));
+    g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(i); });
+  });
 }
 
 // =========================================================
-// 6. SCATTER — GROUPED POSITIONS + SIDE LEGEND
+// 6. SCATTER BUILD
 // =========================================================
-
-const scatter = document.getElementById('scatter');
-const SC_W = 480, SC_H = 420;
-const SC_PAD_L = 44, SC_PAD_R = 190, SC_PAD_T = 22, SC_PAD_B = 42;
-const SC_INNER_W = SC_W - SC_PAD_L - SC_PAD_R;    // 246
-const SC_INNER_H = SC_H - SC_PAD_T - SC_PAD_B;    // 356
-const MAX_EXT = 15, MAX_INT = 4;
-const LEGEND_X = SC_PAD_L + SC_INNER_W + 12;
-const LEGEND_ROW_H = 18;
-
-const scX = v => SC_PAD_L + (v / MAX_EXT) * SC_INNER_W;
-const scY = v => SC_H - SC_PAD_B - (v / MAX_INT) * SC_INNER_H;
-
-const scDotEls = [];
-const scLegendRows = [];
 
 function buildScatter() {
+  const D = state.D;
+  const scatter = document.getElementById('scatter');
   scatter.innerHTML = '';
-  scatter.setAttribute('viewBox', `0 0 ${SC_W} ${SC_H}`);
+  scatter.setAttribute('viewBox', `0 0 ${D.scatter.w} ${D.scatter.h}`);
 
+  state.scDotEls = [];
+  state.scLegendRows = [];
+
+  const SC_W = D.scatter.w, SC_H = D.scatter.h;
+  const SC_PAD_L = D.scatter.padL, SC_PAD_R = D.scatter.padR;
+  const SC_PAD_T = D.scatter.padT, SC_PAD_B = D.scatter.padB;
+  const SC_INNER_W = SC_W - SC_PAD_L - SC_PAD_R;
+  const SC_INNER_H = SC_H - SC_PAD_T - SC_PAD_B;
+  const MAX_EXT = D.scatter.maxExt, MAX_INT = D.scatter.maxInt;
+  const LEGEND_X = SC_PAD_L + SC_INNER_W + 12;
+  const LEGEND_ROW_H = 18;
+
+  const scX = v => SC_PAD_L + (v / MAX_EXT) * SC_INNER_W;
+  const scY = v => SC_H - SC_PAD_B - (v / MAX_INT) * SC_INNER_H;
+
+  // --- grid ---
   for (let k = 0; k <= MAX_INT; k++) {
     const l = document.createElementNS(svgNS, 'line');
     l.setAttribute('x1', scX(0)); l.setAttribute('y1', scY(k));
@@ -718,21 +663,23 @@ function buildScatter() {
     l.setAttribute('stroke', '#222a45'); l.setAttribute('stroke-width', 1);
     scatter.appendChild(l);
   }
-
+  // --- axes ---
   const ax = document.createElementNS(svgNS, 'line');
   ax.setAttribute('x1', scX(0)); ax.setAttribute('y1', scY(0));
   ax.setAttribute('x2', scX(MAX_EXT)); ax.setAttribute('y2', scY(0));
-5  ax.setAttribute('stroke',, '#3a3f55');  ax.setAttribute('stroke-width', 110.5);
-  scatter.appendChild,(ax);
+  ax.setAttribute('stroke', '#3a3f55'); ax.setAttribute('stroke-width', 1.5);
+  scatter.appendChild(ax);
 
-  const ay = document .createElementNS(svgNS, 'line');
+  const ay = document.createElementNS(svgNS, 'line');
   ay.setAttribute('x1', scX(0)); ay.setAttribute('y1', scY(0));
   ay.setAttribute('x2', scX(0)); ay.setAttribute('y2', scY(MAX_INT));
   ay.setAttribute('stroke', '#3a3f55'); ay.setAttribute('stroke-width', 1.5);
   scatter.appendChild(ay);
 
-  // X ticks at 0, 5, 10, 15
-  [0, 15].forEach(k => {
+  // --- x ticks ---
+  const xticks = MAX_EXT > 8 ? [0, 5, 10, 15] : Array.from({length: MAX_EXT+1}, (_,k)=>k);
+  xticks.forEach(k => {
+    if (k > MAX_EXT) return;
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('x', scX(k)); t.setAttribute('y', SC_H - SC_PAD_B + 16);
     t.setAttribute('text-anchor', 'middle');
@@ -740,7 +687,7 @@ function buildScatter() {
     t.style.fontSize = '10px'; t.textContent = k;
     scatter.appendChild(t);
   });
-  // Y ticks 0..4
+  // --- y ticks ---
   for (let k = 0; k <= MAX_INT; k++) {
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('x', SC_PAD_L - 8); t.setAttribute('y', scY(k) + 4);
@@ -758,9 +705,8 @@ function buildScatter() {
   xl.setAttribute('y', SC_H - 8);
   xl.setAttribute('text-anchor', 'middle');
   xl.setAttribute('fill', '#8a90a8');
-  xl.style.fontSize = '11px';
-  xl.style.fontWeight = '600';
-  xl.textContent = '|extent| (scenarios)';
+  xl.style.fontSize = '11px'; xl.style.fontWeight = '600';
+  xl.textContent = '|extent|';
   scatter.appendChild(xl);
 
   const yl = document.createElementNS(svgNS, 'text');
@@ -768,36 +714,34 @@ function buildScatter() {
   yl.setAttribute('y', plotCenterY);
   yl.setAttribute('text-anchor', 'middle');
   yl.setAttribute('fill', '#8a90a8');
-  yl.style.fontSize = '11px';
-  yl.style.fontWeight = '600';
+  yl.style.fontSize = '11px'; yl.style.fontWeight = '600';
   yl.setAttribute('transform', `rotate(-90, 12, ${plotCenterY})`);
-  yl.textContent = '|intent| (attributes)';
+  yl.textContent = '|intent|';
   scatter.appendChild(yl);
 
   const lt = document.createElementNS(svgNS, 'text');
   lt.setAttribute('x', LEGEND_X);
   lt.setAttribute('y', SC_PAD_T + 2);
   lt.setAttribute('fill', '#8a90a8');
-  lt.style.fontSize = '9px';
-  lt.style.fontWeight = '700';
+  lt.style.fontSize = '9px'; lt.style.fontWeight = '700';
   lt.style.letterSpacing = '0.08em';
   lt.textContent = 'CONCEPTS';
   scatter.appendChild(lt);
 
-  // Group by (extent size, intent size)
+  // --- group by (extent size, intent size) ---
   const groups = new Map();
-  CONCEPTS.forEach((c, i) => {
+  D.concepts.forEach((c, i) => {
     const key = `${c.extent.length}|${c.intent.length}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(i);
   });
 
-  // Draw plot markers
+  // --- plot markers ---
   groups.forEach((ids, key) => {
     const [ex, it] = key.split('|').map(Number);
     const cx = scX(ex), cy = scY(it);
     const count = ids.length;
-    const baseR = 7 * Math.sqrt(count);
+    const baseR = (D.currentKey === 'freedom' ? 7 : 8) * Math.sqrt(count);
 
     const g = document.createElementNS(svgNS, 'g');
 
@@ -835,7 +779,7 @@ function buildScatter() {
     }
 
     scatter.appendChild(g);
-    scDotEls.push({ g, dot, ring, ids, key, baseR, count });
+    state.scDotEls.push({ g, dot, ring, ids, key, baseR, count });
 
     if (count === 1) {
       const only = ids[0];
@@ -846,7 +790,7 @@ function buildScatter() {
     }
   });
 
-  // Legend rows — one per concept, grouped by position
+  // --- legend rows ---
   let ly = SC_PAD_T + 16;
   let lastKey = null;
   groups.forEach((ids, key) => {
@@ -854,7 +798,7 @@ function buildScatter() {
     const [ex, it] = key.split('|').map(Number);
 
     ids.forEach((conceptId) => {
-      const c = CONCEPTS[conceptId];
+      const c = D.concepts[conceptId];
       const rowY = ly + 8;
 
       const row = document.createElementNS(svgNS, 'g');
@@ -888,7 +832,7 @@ function buildScatter() {
       row.appendChild(posText);
 
       scatter.appendChild(row);
-      scLegendRows.push({ row, marker, label, conceptId });
+      state.scLegendRows.push({ row, marker, label, conceptId });
 
       row.addEventListener('mouseenter', () => onEnter(conceptId));
       row.addEventListener('mouseleave', () => onLeave(conceptId));
@@ -901,58 +845,238 @@ function buildScatter() {
   });
 }
 
-buildScatter();
+// =========================================================
+// 7. STATE & INTERACTION
+// =========================================================
+
+function getPinned() { return state.pinnedByDataset[state.currentKey]; }
+function setPinned(v) { state.pinnedByDataset[state.currentKey] = v; }
+
+function onEnter(i) { state.hoverId = i; applyState(i); }
+function onLeave(i) {
+  state.hoverId = null;
+  const p = getPinned();
+  if (p !== null) applyState(p);
+  else clearAll();
+}
+function onToggle(i) {
+  if (getPinned() === i) {
+    setPinned(null);
+    if (state.hoverId !== null) applyState(state.hoverId);
+    else clearAll();
+  } else {
+    setPinned(i);
+    applyState(i);
+  }
+  renderPanel();
+}
+
+function applyState(i) {
+  const D = state.D;
+  state.nodeEls.forEach((el, k) => {
+    el.classList.remove('hovered','ancestor','descendant');
+    if (k === i) el.classList.add('hovered');
+    else if (D.ANCS[i].has(k)) el.classList.add('ancestor');
+    else if (D.DESC[i].has(k)) el.classList.add('descendant');
+  });
+
+  state.edgeEls.forEach(line => {
+    line.classList.remove('ancestor','descendant');
+    const a = parseInt(line.dataset.a);
+    const b = parseInt(line.dataset.b);
+    const isAbove = (a === i) || D.ANCS[i].has(a);
+    const isBelow = (b === i) || D.DESC[i].has(b);
+    if (isAbove) line.classList.add('ancestor');
+    else if (isBelow) line.classList.add('descendant');
+  });
+
+  updatePanel(i);
+  updateScatter(i);
+}
+
+function clearAll() {
+  state.nodeEls.forEach(el => el.classList.remove('hovered','ancestor','descendant'));
+  state.edgeEls.forEach(line => line.classList.remove('ancestor','descendant'));
+  document.getElementById('info-card').innerHTML =
+    '<h2>Node</h2><div class="hint">Hover a node in the lattice to preview. Click to pin.</div>';
+  updateScatter(null);
+}
+
+function refreshPins() {
+  const p = getPinned();
+  state.nodeEls.forEach((el, k) => {
+    el.classList.toggle('pinned', k === p);
+  });
+}
+
+// =========================================================
+// 8. PANEL
+// =========================================================
+
+function chipList(arr, cls) {
+  return arr.map(x => `<span class="chip ${cls}">${x}</span>`).join('');
+}
+function chipNodes(ids, cls) {
+  const D = state.D;
+  return ids.map(j => `<span class="chip ${cls}">${D.concepts[j].short}</span>`).join(' ');
+}
+
+function renderPanel() {
+  const p = getPinned();
+  if (p !== null) updatePanel(p);
+  else if (state.hoverId !== null) updatePanel(state.hoverId);
+  else clearAll();
+}
+
+function updatePanel(i) {
+  const D = state.D;
+  const c = D.concepts[i];
+  const N = D.N;
+
+  const joinsByResult = {};
+  for (let j = 0; j < N; j++) {
+    if (j === i) continue;
+    const r = D.join(i, j);
+    (joinsByResult[r] ||= []).push(j);
+  }
+  const meetsByResult = {};
+  for (let j = 0; j < N; j++) {
+    if (j === i) continue;
+    const r = D.meet(i, j);
+    (meetsByResult[r] ||= []).push(j);
+  }
+  const asJoinOf = [];
+  for (let x = 0; x < N; x++) {
+    if (x === i) continue;
+    for (let y = x + 1; y < N; y++) {
+      if (y === i) continue;
+      if (D.join(x, y) === i) asJoinOf.push([x, y]);
+    }
+  }
+  const asMeetOf = [];
+  for (let x = 0; x < N; x++) {
+    if (x === i) continue;
+    for (let y = x + 1; y < N; y++) {
+      if (y === i) continue;
+      if (D.meet(x, y) === i) asMeetOf.push([x, y]);
+    }
+  }
+
+  const pinnedBadge = (getPinned() === i)
+    ? `<span class="pin-badge">📌 pinned</span>`
+    : `<span class="pin-hint">click to pin</span>`;
+
+  let html = `<h2>Node</h2>`;
+  html += `<div class="node-title">${c.name} ${pinnedBadge}</div>`;
+
+  html += `<div class="section-title first">Extent</div>`;
+  html += c.extent.length
+    ? `<div class="chips">${chipList(c.extent, 'obj')}</div>`
+    : `<div class="hint" style="font-size:12px;">∅ — nothing</div>`;
+
+  html += `<div class="section-title">Intent</div>`;
+  html += c.intent.length
+    ? `<div class="chips">${chipList(c.intent, 'attr')}</div>`
+    : `<div class="hint" style="font-size:12px;">∅ — nothing shared</div>`;
+
+  html += `<div class="section-title">Hierarchy</div>`;
+  html += `<div class="kv"><span class="k">Covered by:</span> ${
+    D.parents[i].length ? chipNodes(D.parents[i], 'anc')
+                        : `<span class="hint" style="font-size:12px;">nothing (top)</span>`
+  }</div>`;
+  html += `<div class="kv"><span class="k">Covers:</span> ${
+    D.children[i].length ? chipNodes(D.children[i], 'desc')
+                         : `<span class="hint" style="font-size:12px;">nothing (bottom)</span>`
+  }</div>`;
+
+  html += `<div class="section-title">Joins with other nodes</div>`;
+  html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊔ each other node:</div>`;
+  Object.keys(joinsByResult).sort((a,b)=>+a - +b).forEach(r => {
+    html += `<div class="kv"><span class="arrow-anc">⊔ → ${D.concepts[r].short}</span><br>`;
+    html += `with ${chipNodes(joinsByResult[r], '')}</div>`;
+  });
+
+  html += `<div class="section-title">Meets with other nodes</div>`;
+  html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊓ each other node:</div>`;
+  Object.keys(meetsByResult).sort((a,b)=>+a - +b).forEach(r => {
+    html += `<div class="kv"><span class="arrow-desc">⊓ → ${D.concepts[r].short}</span><br>`;
+    html += `with ${chipNodes(meetsByResult[r], '')}</div>`;
+  });
+
+  if (asJoinOf.length) {
+    html += `<div class="section-title">This node as a join</div>`;
+    asJoinOf.forEach(([x, y]) => {
+      html += `<div class="kv"><span class="chip self">${D.concepts[x].short} ⊔ ${D.concepts[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
+    });
+  }
+
+  if (asMeetOf.length) {
+    html += `<div class="section-title">This node as a meet</div>`;
+    asMeetOf.forEach(([x, y]) => {
+      html += `<div class="kv"><span class="chip self">${D.concepts[x].short} ⊓ ${D.concepts[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
+    });
+  }
+
+  document.getElementById('info-card').innerHTML = html;
+}
+
+// =========================================================
+// 9. SCATTER UPDATE
+// =========================================================
 
 function updateScatter(i) {
-  scDotEls.forEach(({ dot, ring, ids, baseR }) => {
-    let state = 'neutral';
+  const D = state.D;
+  const p = getPinned();
+
+  state.scDotEls.forEach(({ dot, ring, ids, baseR }) => {
+    let s = 'neutral';
     if (i !== null) {
-      if (ids.includes(i)) state = 'hovered';
-      else if (ids.some(id => ANCS[i].has(id))) state = 'ancestor';
-      else if (ids.some(id => DESC[i].has(id))) state = 'descendant';
+      if (ids.includes(i)) s = 'hovered';
+      else if (ids.some(id => D.ANCS[i].has(id))) s = 'ancestor';
+      else if (ids.some(id => D.DESC[i].has(id))) s = 'descendant';
     }
 
-    if (state === 'neutral') {
+    if (s === 'neutral') {
       dot.setAttribute('r', baseR);
       dot.setAttribute('fill', '#5b9bd5');
       dot.style.filter = 'none';
-    } else if (state === 'hovered') {
+    } else if (s === 'hovered') {
       dot.setAttribute('r', baseR * 1.35);
       dot.setAttribute('fill', '#ffd23f');
       dot.style.filter = 'drop-shadow(0 0 10px rgba(255,210,63,1))';
-    } else if (state === 'ancestor') {
+    } else if (s === 'ancestor') {
       dot.setAttribute('r', baseR * 1.08);
       dot.setAttribute('fill', '#ff8c42');
       dot.style.filter = 'drop-shadow(0 0 6px rgba(255,140,66,.7))';
-    } else if (state === 'descendant') {
+    } else if (s === 'descendant') {
       dot.setAttribute('r', baseR * 1.08);
       dot.setAttribute('fill', '#e63946');
       dot.style.filter = 'drop-shadow(0 0 6px rgba(230,57,70,.7))';
     }
 
     ring.style.display =
-      (pinnedId !== null && ids.includes(pinnedId)) ? 'block' : 'none';
+      (p !== null && ids.includes(p)) ? 'block' : 'none';
   });
 
-  scLegendRows.forEach(({ marker, label, conceptId }) => {
-    let state = 'neutral';
+  state.scLegendRows.forEach(({ marker, label, conceptId }) => {
+    let s = 'neutral';
     if (i !== null) {
-      if (conceptId === i) state = 'hovered';
-      else if (ANCS[i].has(conceptId)) state = 'ancestor';
-      else if (DESC[i].has(conceptId)) state = 'descendant';
-      else state = 'dim';
+      if (conceptId === i) s = 'hovered';
+      else if (D.ANCS[i].has(conceptId)) s = 'ancestor';
+      else if (D.DESC[i].has(conceptId)) s = 'descendant';
+      else s = 'dim';
     }
 
-    if (state === 'neutral') {
+    if (s === 'neutral') {
       marker.setAttribute('fill', '#5b9bd5');
       label.setAttribute('fill', '#c8cde0');
-    } else if (state === 'hovered') {
+    } else if (s === 'hovered') {
       marker.setAttribute('fill', '#ffd23f');
       label.setAttribute('fill', '#ffd23f');
-    } else if (state === 'ancestor') {
+    } else if (s === 'ancestor') {
       marker.setAttribute('fill', '#ff8c42');
       label.setAttribute('fill', '#ff8c42');
-    } else if (state === 'descendant') {
+    } else if (s === 'descendant') {
       marker.setAttribute('fill', '#e63946');
       label.setAttribute('fill', '#e63946');
     } else {
@@ -965,17 +1089,70 @@ function updateScatter(i) {
 }
 
 // =========================================================
-// 7. BACKGROUND CLICK RELEASES PIN
+// 10. TAB SWITCHING
+// =========================================================
+
+function switchTo(key) {
+  state.currentKey = key;
+  state.D = processDataset(DATASETS[key]);
+  state.hoverId = null;
+
+  // Update header
+  document.getElementById('page-title').textContent = state.D.title;
+  document.getElementById('page-subtitle').textContent = state.D.subtitle;
+
+  // Update tab active states
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.key === key);
+  });
+
+  // Rebuild UI
+  buildLattice();
+  buildScatter();
+
+  // Restore pinned view for this dataset, or clear
+  const p = getPinned();
+  if (p !== null) applyState(p);
+  else clearAll();
+  renderPanel();
+}
+
+function buildTabs() {
+  const bar = document.getElementById('tabbar');
+  bar.innerHTML = '';
+  const labels = { planets: 'Solar System', freedom: 'Freedom' };
+  Object.keys(DATASETS).forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'tab';
+    btn.dataset.key = key;
+    btn.textContent = labels[key] || key;
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      if (state.currentKey !== key) switchTo(key);
+    });
+    bar.appendChild(btn);
+  });
+}
+
+// =========================================================
+// 11. BACKGROUND CLICK RELEASES PIN
 // =========================================================
 
 document.addEventListener('click', () => {
-  if (pinnedId !== null) {
-    pinnedId = null;
-    if (hoverId !== null) applyState(hoverId);
+  if (getPinned() !== null) {
+    setPinned(null);
+    if (state.hoverId !== null) applyState(state.hoverId);
     else clearAll();
     renderPanel();
   }
 });
+
+// =========================================================
+// 12. INIT
+// =========================================================
+
+buildTabs();
+switchTo('planets');
 </script>
 </body>
 </html>
