@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Concept Lattice — Solar System</title>
+<title>Concept Lattice — Freedom</title>
 <style>
   :root {
     --bg: #0f1220;
@@ -53,8 +53,8 @@
     align-items: flex-start;
     flex-wrap: wrap;
   }
-  #lattice-wrap { flex: 1 1 600px; min-width: 380px; }
-  #panel { flex: 0 1 500px; min-width: 400px; }
+  #lattice-wrap { flex: 1 1 640px; min-width: 380px; }
+  #panel { flex: 0 1 520px; min-width: 400px; }
 
   #lattice {
     background: var(--panel);
@@ -64,18 +64,17 @@
     display: block;
   }
 
-  /* --- SVG nodes --- */
   .node { cursor: pointer; }
   .node circle {
     fill: var(--node);
     stroke: var(--node-edge);
     stroke-width: 1.5;
     transition: fill .25s, stroke .25s, r .25s;
-    r: 26;
+    r: 22;
   }
   .node text {
     fill: #c8cde0;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 600;
     text-anchor: middle;
     pointer-events: none;
@@ -83,7 +82,7 @@
   }
   .edge {
     stroke: var(--edge);
-    stroke-width: 1.5;
+    stroke-width: 1.4;
     transition: stroke .25s, stroke-width .25s, stroke-opacity .25s;
   }
 
@@ -92,7 +91,7 @@
     stroke: #fff3c4;
     stroke-width: 3;
     filter: drop-shadow(0 0 14px rgba(255,210,63,.85));
-    r: 30;
+    r: 26;
   }
   .node.ancestor circle {
     fill: var(--anc);
@@ -147,7 +146,6 @@
     50%      { stroke-opacity: 1; }
   }
 
-  /* --- Panel cards --- */
   .card {
     background: var(--panel);
     border-radius: 14px;
@@ -235,8 +233,8 @@
 <body>
 
 <header>
-  <h1>Concept Lattice — Solar System</h1>
-  <p>Hover a node to preview its joins and meets. Click to pin the view. Click again to release.</p>
+  <h1>Concept Lattice — Freedom</h1>
+  <p>Four binary oppositions: non-interference, available options, effective agency, authenticity.</p>
 </header>
 
 <div class="legend">
@@ -248,7 +246,7 @@
 
 <div class="container">
   <div id="lattice-wrap">
-    <svg id="lattice" viewBox="0 0 800 660"></svg>
+    <svg id="lattice" viewBox="0 0 800 720"></svg>
   </div>
   <div id="panel">
     <div class="card" id="info-card">
@@ -257,7 +255,7 @@
     </div>
     <div class="card">
       <h2>Extent × Intent</h2>
-      <svg id="scatter" viewBox="0 0 480 320"></svg>
+      <svg id="scatter" viewBox="0 0 480 420"></svg>
       <div class="scatter-hint">Dot size reflects how many concepts share the same position.</div>
     </div>
   </div>
@@ -265,73 +263,136 @@
 
 <script>
 // =========================================================
-// 1. DATA
+// 1. DATA — B₄, sixteen concepts
 // =========================================================
 
 const CONCEPTS = [
-  // Bottom (most specific)
-  { id: 0, label: 'Full freedom', short: 'FF',
-    name: 'Full freedom — non-interference, options, and effective agency',
-    extent: ['Free citizen'],
-    intent: ['Non-interference', 'Available options', 'Effective agency'],
+  // Bottom — most specific
+  { id: 0, label: 'Full · freedom', short: 'FF',
+    name: 'Full freedom — all four attributes present',
+    extent: ['Full freedom'],
+    intent: ['Non-interference','Available options','Effective agency','Authenticity'],
     x: 0.50, y: 0.06 },
 
-  // Pair-attribute concepts
-  { id: 1, label: 'Formal liberty', short: 'FL',
-    name: 'Formal liberty — non-interference and options, but no effective agency',
-    extent: ['Free citizen', 'Poor but uncoerced'],
-    intent: ['Non-interference', 'Available options'],
-    x: 0.22, y: 0.36 },
+  // Triples
+  { id: 1, label: 'Republican · liberty', short: 'RepLib',
+    name: 'Republican liberty — NI + AO + EA, but not authenticity',
+    extent: ['Republican liberty','Full freedom'],
+    intent: ['Non-interference','Available options','Effective agency'],
+    x: 0.18, y: 0.30 },
 
-  { id: 2, label: 'Inner freedom', short: 'IF',
-    name: 'Inner freedom — non-interference and effective agency, but no options',
-    extent: ['Free citizen', 'Stoic sage'],
-    intent: ['Non-interference', 'Effective agency'],
-    x: 0.50, y: 0.36 },
+  { id: 2, label: 'Autonomous · liberty', short: 'AutLib',
+    name: 'Autonomous liberty — NI + AO + AU, but not effective agency',
+    extent: ['Autonomous liberty','Full freedom'],
+    intent: ['Non-interference','Available options','Authenticity'],
+    x: 0.40, y: 0.30 },
 
-  { id: 3, label: 'Capability', short: 'Cap',
-    name: 'Capability — options and effective agency, but no non-interference',
-    extent: ['Free citizen', 'Coerced but resourceful'],
-    intent: ['Available options', 'Effective agency'],
-    x: 0.78, y: 0.36 },
+  { id: 3, label: 'Self-authored · IF', short: 'SelfIF',
+    name: 'Self-authored inner freedom — NI + EA + AU, but not options',
+    extent: ['Self-authored inner freedom','Full freedom'],
+    intent: ['Non-interference','Effective agency','Authenticity'],
+    x: 0.60, y: 0.30 },
 
-  // Single-attribute concepts
-  { id: 4, label: 'Non-interference', short: 'NI',
+  { id: 4, label: 'Empowered · autonomy', short: 'EmpAut',
+    name: 'Empowered autonomy — AO + EA + AU, but not non-interference',
+    extent: ['Empowered autonomy','Full freedom'],
+    intent: ['Available options','Effective agency','Authenticity'],
+    x: 0.82, y: 0.30 },
+
+  // Pairs
+  { id: 5, label: 'Formal · liberty', short: 'FormLib',
+    name: 'Formal liberty — non-interference and options',
+    extent: ['Formal liberty','Republican liberty','Autonomous liberty','Full freedom'],
+    intent: ['Non-interference','Available options'],
+    x: 0.10, y: 0.52 },
+
+  { id: 6, label: 'Inner · freedom', short: 'InnerF',
+    name: 'Inner freedom — non-interference and effective agency',
+    extent: ['Inner freedom','Republican liberty','Self-authored inner freedom','Full freedom'],
+    intent: ['Non-interference','Effective agency'],
+    x: 0.24, y: 0.52 },
+
+  { id: 7, label: 'Authentic · NI', short: 'AutNI',
+    name: 'Authentic non-interference — NI plus authenticity',
+    extent: ['Authentic NI','Autonomous liberty','Self-authored inner freedom','Full freedom'],
+    intent: ['Non-interference','Authenticity'],
+    x: 0.40, y: 0.52 },
+
+  { id: 8, label: 'Capability', short: 'Cap',
+    name: 'Capability — options and effective agency',
+    extent: ['Capability','Republican liberty','Empowered autonomy','Full freedom'],
+    intent: ['Available options','Effective agency'],
+    x: 0.56, y: 0.52 },
+
+  { id: 9, label: 'Authentic · choice', short: 'AutCh',
+    name: 'Authentic choice — options plus authenticity',
+    extent: ['Authentic choice','Autonomous liberty','Empowered autonomy','Full freedom'],
+    intent: ['Available options','Authenticity'],
+    x: 0.72, y: 0.52 },
+
+  { id: 10, label: 'Authentic · agency', short: 'AutAg',
+    name: 'Authentic agency — effective agency plus authenticity',
+    extent: ['Authentic agency','Self-authored inner freedom','Empowered autonomy','Full freedom'],
+    intent: ['Effective agency','Authenticity'],
+    x: 0.90, y: 0.52 },
+
+  // Singles
+  { id: 11, label: 'Non- · interference', short: 'NI',
     name: 'Non-interference — negative liberty as such',
-    extent: ['Free citizen', 'Poor but uncoerced', 'Stoic sage', 'Mere non-interference'],
+    extent: ['Mere non-interference','Formal liberty','Inner freedom','Authentic NI',
+             'Republican liberty','Autonomous liberty','Self-authored inner freedom','Full freedom'],
     intent: ['Non-interference'],
-    x: 0.20, y: 0.66 },
+    x: 0.10, y: 0.76 },
 
-  { id: 5, label: 'Available options', short: 'AO',
+  { id: 12, label: 'Available · options', short: 'AO',
     name: 'Available options — the opportunity component',
-    extent: ['Free citizen', 'Poor but uncoerced', 'Coerced but resourceful'],
+    extent: ['Options without liberty','Formal liberty','Capability','Authentic choice',
+             'Republican liberty','Autonomous liberty','Empowered autonomy','Full freedom'],
     intent: ['Available options'],
-    x: 0.50, y: 0.66 },
+    x: 0.35, y: 0.76 },
 
-  { id: 6, label: 'Effective agency', short: 'EA',
+  { id: 13, label: 'Effective · agency', short: 'EA',
     name: 'Effective agency — the capability component',
-    extent: ['Free citizen', 'Stoic sage', 'Coerced but resourceful'],
+    extent: ['Bare capacity','Inner freedom','Capability','Authentic agency',
+             'Republican liberty','Self-authored inner freedom','Empowered autonomy','Full freedom'],
     intent: ['Effective agency'],
-    x: 0.80, y: 0.66 },
+    x: 0.65, y: 0.76 },
 
-  // Top (most general)
-  { id: 7, label: 'Freedom', short: 'Freedom',
+  { id: 14, label: 'Authenticity', short: 'AU',
+    name: 'Authenticity — the self-authorship component',
+    extent: ['Authentic but unfree','Authentic NI','Authentic choice','Authentic agency',
+             'Autonomous liberty','Self-authored inner freedom','Empowered autonomy','Full freedom'],
+    intent: ['Authenticity'],
+    x: 0.90, y: 0.76 },
+
+  // Top
+  { id: 15, label: 'Freedom', short: 'Freedom',
     name: 'Freedom as such — the most general concept',
-    extent: ['Free citizen', 'Poor but uncoerced', 'Stoic sage',
-             'Coerced but resourceful', 'Mere non-interference', 'Total unfreedom'],
+    extent: ['Mere non-interference','Options without liberty','Bare capacity','Authentic but unfree',
+             'Formal liberty','Inner freedom','Authentic NI','Capability','Authentic choice',
+             'Authentic agency','Republican liberty','Autonomous liberty',
+             'Self-authored inner freedom','Empowered autonomy','Full freedom'],
     intent: [],
-    x: 0.50, y: 0.94 }
+    x: 0.50, y: 0.96 }
 ];
 
 const EDGES = [
-  // From bottom up to pairs
-  [0, 1], [0, 2], [0, 3],
-  // From pairs up to singles
-  [1, 4], [1, 5],
-  [2, 4], [2, 6],
-  [3, 5], [3, 6],
-  // From singles up to top
-  [4, 7], [5, 7], [6, 7]
+  // Top to singles
+  [15, 11], [15, 12], [15, 13], [15, 14],
+  // Singles to pairs
+  [11, 5], [11, 6], [11, 7],
+  [12, 5], [12, 8], [12, 9],
+  [13, 6], [13, 8], [13, 10],
+  [14, 7], [14, 9], [14, 10],
+  // Pairs to triples
+  [5, 1], [5, 2],
+  [6, 1], [6, 3],
+  [7, 2], [7, 3],
+  [8, 1], [8, 4],
+  [9, 2], [9, 4],
+  [10, 3], [10, 4],
+  // Triples to bottom
+  [1, 0], [2, 0], [3, 0], [4, 0]
 ];
 
 // =========================================================
@@ -405,9 +466,9 @@ function meet(a, b) {
 
 const svgNS = 'http://www.w3.org/2000/svg';
 const svg = document.getElementById('lattice');
-const W = 800, H = 660;
-const PAD_X = 100, PAD_Y = 90;
-const NODE_R = 26;
+const W = 800, H = 720;
+const PAD_X = 70, PAD_Y = 80;
+const NODE_R = 22;
 
 const px = CONCEPTS.map(c => ({
   x: PAD_X + c.x * (W - 2*PAD_X),
@@ -447,7 +508,7 @@ CONCEPTS.forEach((c, i) => {
   lines.forEach((ln, k) => {
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('x', px[i].x);
-    t.setAttribute('y', px[i].y + NODE_R + 18 + k * 13);
+    t.setAttribute('y', px[i].y + NODE_R + 14 + k * 12);
     t.setAttribute('text-anchor', 'middle');
     t.textContent = ln;
     g.appendChild(t);
@@ -528,7 +589,7 @@ function chipList(arr, cls) {
   return arr.map(x => `<span class="chip ${cls}">${x}</span>`).join('');
 }
 function chipNodes(ids, cls) {
-  return ids.map(j => `<span class="chip ${cls}">${CONCEPTS[j].label}</span>`).join(' ');
+  return ids.map(j => `<span class="chip ${cls}">${CONCEPTS[j].short}</span>`).join(' ');
 }
 
 function renderPanel() {
@@ -576,10 +637,10 @@ function updatePanel(i) {
   let html = `<h2>Node</h2>`;
   html += `<div class="node-title">${c.name} ${pinnedBadge}</div>`;
 
-  html += `<div class="section-title first">Extent (objects)</div>`;
+  html += `<div class="section-title first">Extent (scenarios)</div>`;
   html += c.extent.length
     ? `<div class="chips">${chipList(c.extent, 'obj')}</div>`
-    : `<div class="hint" style="font-size:12px;">∅ — no objects</div>`;
+    : `<div class="hint" style="font-size:12px;">∅ — no scenarios</div>`;
 
   html += `<div class="section-title">Intent (attributes)</div>`;
   html += c.intent.length
@@ -599,30 +660,28 @@ function updatePanel(i) {
   html += `<div class="section-title">Joins with other nodes</div>`;
   html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊔ each other node:</div>`;
   Object.keys(joinsByResult).sort((a,b)=>+a - +b).forEach(r => {
-    html += `<div class="kv"><span class="arrow-anc">⊔ → ${CONCEPTS[r].label}</span><br>`;
+    html += `<div class="kv"><span class="arrow-anc">⊔ → ${CONCEPTS[r].short}</span><br>`;
     html += `with ${chipNodes(joinsByResult[r], '')}</div>`;
   });
 
   html += `<div class="section-title">Meets with other nodes</div>`;
   html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">This node ⊓ each other node:</div>`;
   Object.keys(meetsByResult).sort((a,b)=>+a - +b).forEach(r => {
-    html += `<div class="kv"><span class="arrow-desc">⊓ → ${CONCEPTS[r].label}</span><br>`;
+    html += `<div class="kv"><span class="arrow-desc">⊓ → ${CONCEPTS[r].short}</span><br>`;
     html += `with ${chipNodes(meetsByResult[r], '')}</div>`;
   });
 
   if (asJoinOf.length) {
     html += `<div class="section-title">This node as a join</div>`;
-    html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">Pairs of other nodes whose join is this node:</div>`;
     asJoinOf.forEach(([x, y]) => {
-      html += `<div class="kv"><span class="chip self">${CONCEPTS[x].label} ⊔ ${CONCEPTS[y].label}</span> = <span class="chip self">${c.label}</span></div>`;
+      html += `<div class="kv"><span class="chip self">${CONCEPTS[x].short} ⊔ ${CONCEPTS[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
     });
   }
 
   if (asMeetOf.length) {
     html += `<div class="section-title">This node as a meet</div>`;
-    html += `<div class="kv" style="color:var(--text-dim);font-size:12px;">Pairs of other nodes whose meet is this node:</div>`;
     asMeetOf.forEach(([x, y]) => {
-      html += `<div class="kv"><span class="chip self">${CONCEPTS[x].label} ⊓ ${CONCEPTS[y].label}</span> = <span class="chip self">${c.label}</span></div>`;
+      html += `<div class="kv"><span class="chip self">${CONCEPTS[x].short} ⊓ ${CONCEPTS[y].short}</span> = <span class="chip self">${c.short}</span></div>`;
     });
   }
 
@@ -634,32 +693,24 @@ function updatePanel(i) {
 // =========================================================
 
 const scatter = document.getElementById('scatter');
-const SC_W = 480, SC_H = 320;
-const SC_PAD_L = 44, SC_PAD_R = 200, SC_PAD_T = 22, SC_PAD_B = 42;
-const SC_INNER_W = SC_W - SC_PAD_L - SC_PAD_R;    // 236
-const SC_INNER_H = SC_H - SC_PAD_T - SC_PAD_B;    // 256
-const MAX_EXT = 6, MAX_INT = 6;
-const LEGEND_X = SC_PAD_L + SC_INNER_W + 14;
-const LEGEND_ROW_H = 19;
+const SC_W = 480, SC_H = 420;
+const SC_PAD_L = 44, SC_PAD_R = 190, SC_PAD_T = 22, SC_PAD_B = 42;
+const SC_INNER_W = SC_W - SC_PAD_L - SC_PAD_R;    // 246
+const SC_INNER_H = SC_H - SC_PAD_T - SC_PAD_B;    // 356
+const MAX_EXT = 15, MAX_INT = 4;
+const LEGEND_X = SC_PAD_L + SC_INNER_W + 12;
+const LEGEND_ROW_H = 18;
 
 const scX = v => SC_PAD_L + (v / MAX_EXT) * SC_INNER_W;
 const scY = v => SC_H - SC_PAD_B - (v / MAX_INT) * SC_INNER_H;
 
-const scDotEls = [];        // one per unique (x,y) position
-const scLegendRows = [];    // one per concept
+const scDotEls = [];
+const scLegendRows = [];
 
 function buildScatter() {
   scatter.innerHTML = '';
   scatter.setAttribute('viewBox', `0 0 ${SC_W} ${SC_H}`);
 
-  // --- grid lines ---
-  for (let k = 0; k <= MAX_EXT; k++) {
-    const l = document.createElementNS(svgNS, 'line');
-    l.setAttribute('x1', scX(k)); l.setAttribute('y1', scY(0));
-    l.setAttribute('x2', scX(k)); l.setAttribute('y2', scY(MAX_INT));
-    l.setAttribute('stroke', '#222a45'); l.setAttribute('stroke-width', 1);
-    scatter.appendChild(l);
-  }
   for (let k = 0; k <= MAX_INT; k++) {
     const l = document.createElementNS(svgNS, 'line');
     l.setAttribute('x1', scX(0)); l.setAttribute('y1', scY(k));
@@ -668,28 +719,28 @@ function buildScatter() {
     scatter.appendChild(l);
   }
 
-  // --- axes ---
   const ax = document.createElementNS(svgNS, 'line');
   ax.setAttribute('x1', scX(0)); ax.setAttribute('y1', scY(0));
   ax.setAttribute('x2', scX(MAX_EXT)); ax.setAttribute('y2', scY(0));
-  ax.setAttribute('stroke', '#3a3f55'); ax.setAttribute('stroke-width', 1.5);
-  scatter.appendChild(ax);
+5  ax.setAttribute('stroke',, '#3a3f55');  ax.setAttribute('stroke-width', 110.5);
+  scatter.appendChild,(ax);
 
-  const ay = document.createElementNS(svgNS, 'line');
+  const ay = document .createElementNS(svgNS, 'line');
   ay.setAttribute('x1', scX(0)); ay.setAttribute('y1', scY(0));
   ay.setAttribute('x2', scX(0)); ay.setAttribute('y2', scY(MAX_INT));
   ay.setAttribute('stroke', '#3a3f55'); ay.setAttribute('stroke-width', 1.5);
   scatter.appendChild(ay);
 
-  // --- ticks ---
-  for (let k = 0; k <= MAX_EXT; k++) {
+  // X ticks at 0, 5, 10, 15
+  [0, 15].forEach(k => {
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('x', scX(k)); t.setAttribute('y', SC_H - SC_PAD_B + 16);
     t.setAttribute('text-anchor', 'middle');
     t.setAttribute('fill', '#5a6080');
     t.style.fontSize = '10px'; t.textContent = k;
     scatter.appendChild(t);
-  }
+  });
+  // Y ticks 0..4
   for (let k = 0; k <= MAX_INT; k++) {
     const t = document.createElementNS(svgNS, 'text');
     t.setAttribute('x', SC_PAD_L - 8); t.setAttribute('y', scY(k) + 4);
@@ -699,7 +750,6 @@ function buildScatter() {
     scatter.appendChild(t);
   }
 
-  // --- axis titles (centered over plot area only) ---
   const plotCenterX = SC_PAD_L + SC_INNER_W / 2;
   const plotCenterY = SC_PAD_T + SC_INNER_H / 2;
 
@@ -710,7 +760,7 @@ function buildScatter() {
   xl.setAttribute('fill', '#8a90a8');
   xl.style.fontSize = '11px';
   xl.style.fontWeight = '600';
-  xl.textContent = '|extent| (objects)';
+  xl.textContent = '|extent| (scenarios)';
   scatter.appendChild(xl);
 
   const yl = document.createElementNS(svgNS, 'text');
@@ -724,7 +774,6 @@ function buildScatter() {
   yl.textContent = '|intent| (attributes)';
   scatter.appendChild(yl);
 
-  // --- legend title ---
   const lt = document.createElementNS(svgNS, 'text');
   lt.setAttribute('x', LEGEND_X);
   lt.setAttribute('y', SC_PAD_T + 2);
@@ -735,7 +784,7 @@ function buildScatter() {
   lt.textContent = 'CONCEPTS';
   scatter.appendChild(lt);
 
-  // --- group by position ---
+  // Group by (extent size, intent size)
   const groups = new Map();
   CONCEPTS.forEach((c, i) => {
     const key = `${c.extent.length}|${c.intent.length}`;
@@ -743,12 +792,12 @@ function buildScatter() {
     groups.get(key).push(i);
   });
 
-  // --- draw plot markers ---
+  // Draw plot markers
   groups.forEach((ids, key) => {
     const [ex, it] = key.split('|').map(Number);
     const cx = scX(ex), cy = scY(it);
     const count = ids.length;
-    const baseR = 8 * Math.sqrt(count);
+    const baseR = 7 * Math.sqrt(count);
 
     const g = document.createElementNS(svgNS, 'g');
 
@@ -778,7 +827,7 @@ function buildScatter() {
       num.setAttribute('y', cy + 4);
       num.setAttribute('text-anchor', 'middle');
       num.setAttribute('fill', '#0f1220');
-      num.style.fontSize = '12px';
+      num.style.fontSize = '11px';
       num.style.fontWeight = '700';
       num.style.pointerEvents = 'none';
       num.textContent = count;
@@ -786,64 +835,59 @@ function buildScatter() {
     }
 
     scatter.appendChild(g);
-
     scDotEls.push({ g, dot, ring, ids, key, baseR, count });
 
-    // interaction: single-position dots are clickable; group dots are not.
     if (count === 1) {
       const only = ids[0];
       g.style.cursor = 'pointer';
       g.addEventListener('mouseenter', () => onEnter(only));
       g.addEventListener('mouseleave', () => onLeave(only));
       g.addEventListener('click', (ev) => { ev.stopPropagation(); onToggle(only); });
-    } else {
-      g.style.cursor = 'default';
     }
   });
 
-  // --- build legend rows ---
-  let ly = SC_PAD_T + 18;
+  // Legend rows — one per concept, grouped by position
+  let ly = SC_PAD_T + 16;
   let lastKey = null;
   groups.forEach((ids, key) => {
-    if (lastKey !== null) ly += 5;   // extra spacing between groups
+    if (lastKey !== null) ly += 4;
     const [ex, it] = key.split('|').map(Number);
 
     ids.forEach((conceptId) => {
       const c = CONCEPTS[conceptId];
-      const rowY = ly + 10;
+      const rowY = ly + 8;
 
       const row = document.createElementNS(svgNS, 'g');
       row.style.cursor = 'pointer';
 
       const marker = document.createElementNS(svgNS, 'circle');
-      marker.setAttribute('cx', LEGEND_X + 6);
+      marker.setAttribute('cx', LEGEND_X + 5);
       marker.setAttribute('cy', rowY);
-      marker.setAttribute('r', 5);
+      marker.setAttribute('r', 4);
       marker.setAttribute('fill', '#5b9bd5');
       marker.setAttribute('stroke', '#0f1220');
       marker.setAttribute('stroke-width', '1');
       row.appendChild(marker);
 
       const label = document.createElementNS(svgNS, 'text');
-      label.setAttribute('x', LEGEND_X + 18);
-      label.setAttribute('y', rowY + 4);
+      label.setAttribute('x', LEGEND_X + 15);
+      label.setAttribute('y', rowY + 3.5);
       label.setAttribute('fill', '#c8cde0');
-      label.style.fontSize = '11px';
+      label.style.fontSize = '10px';
       label.style.fontWeight = '600';
       label.textContent = c.short;
       row.appendChild(label);
 
       const posText = document.createElementNS(svgNS, 'text');
-      posText.setAttribute('x', SC_W - 8);
-      posText.setAttribute('y', rowY + 4);
+      posText.setAttribute('x', SC_W - 6);
+      posText.setAttribute('y', rowY + 3.5);
       posText.setAttribute('text-anchor', 'end');
       posText.setAttribute('fill', '#5a6080');
-      posText.style.fontSize = '9px';
+      posText.style.fontSize = '8.5px';
       posText.textContent = `(${ex},${it})`;
       row.appendChild(posText);
 
       scatter.appendChild(row);
-
       scLegendRows.push({ row, marker, label, conceptId });
 
       row.addEventListener('mouseenter', () => onEnter(conceptId));
@@ -860,7 +904,6 @@ function buildScatter() {
 buildScatter();
 
 function updateScatter(i) {
-  // --- group dots ---
   scDotEls.forEach(({ dot, ring, ids, baseR }) => {
     let state = 'neutral';
     if (i !== null) {
@@ -887,12 +930,10 @@ function updateScatter(i) {
       dot.style.filter = 'drop-shadow(0 0 6px rgba(230,57,70,.7))';
     }
 
-    // pin ring
     ring.style.display =
       (pinnedId !== null && ids.includes(pinnedId)) ? 'block' : 'none';
   });
 
-  // --- legend rows ---
   scLegendRows.forEach(({ marker, label, conceptId }) => {
     let state = 'neutral';
     if (i !== null) {
@@ -914,7 +955,7 @@ function updateScatter(i) {
     } else if (state === 'descendant') {
       marker.setAttribute('fill', '#e63946');
       label.setAttribute('fill', '#e63946');
-    } else {   // dim
+    } else {
       marker.setAttribute('fill', '#3a3f55');
       label.setAttribute('fill', '#5a6080');
     }
@@ -924,7 +965,7 @@ function updateScatter(i) {
 }
 
 // =========================================================
-// 7. RELEASE PIN ON BACKGROUND CLICK
+// 7. BACKGROUND CLICK RELEASES PIN
 // =========================================================
 
 document.addEventListener('click', () => {
